@@ -5,7 +5,7 @@ import random
 
 class SampleDataLoader:
     def __init__(self, dbname='stock_screener', user='postgres', 
-                 password='nagvarshi@2005', host='localhost', port=5432):
+                 password='Ankit#123', host='localhost', port=5432):
         self.conn = psycopg2.connect(
             dbname=dbname,
             user=user,
