@@ -12,177 +12,168 @@
 -- ============================================================
 -- 1. COMPANIES TABLE
 -- ============================================================
+-- /backend/database/schema.sql
+-- Run as a superuser for extension creation then as a db owner for tables.
+
+-- 1. DB + extension (run once)
+CREATE DATABASE stock_screener;
+\c stock_screener;
+CREATE EXTENSION IF NOT EXISTS timescaledb;
+
+-- 2. companies
 CREATE TABLE IF NOT EXISTS companies (
-    company_id  SERIAL PRIMARY KEY,
-    ticker      VARCHAR(10) UNIQUE NOT NULL,
-    name        TEXT NOT NULL,
-    sector      VARCHAR(50),
-    industry    VARCHAR(100),
-    exchange    VARCHAR(20),
-    market_cap  BIGINT,
-    created_at  TIMESTAMP DEFAULT NOW()
+  company_id SERIAL PRIMARY KEY,
+  ticker VARCHAR(10) UNIQUE NOT NULL,
+  name TEXT,
+  sector VARCHAR(50),
+  industry VARCHAR(100),
+  exchange VARCHAR(20),
+  market_cap BIGINT,
+  ipo_date DATE,
+  country VARCHAR(50),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
--- ============================================================
--- 2. PRICE HISTORY (REGULAR TABLE IN DEV)
--- ============================================================
+-- 3. price_history (hypertable)
 CREATE TABLE IF NOT EXISTS price_history (
-    time    TIMESTAMP NOT NULL,
-    ticker  VARCHAR(10) NOT NULL,
-    open    NUMERIC(10,4),
-    high    NUMERIC(10,4),
-    low     NUMERIC(10,4),
-    close   NUMERIC(10,4),
-    volume  BIGINT,
-    PRIMARY KEY (time, ticker)
+  time TIMESTAMP WITH TIME ZONE NOT NULL,
+  ticker VARCHAR(10) NOT NULL,
+  open NUMERIC,
+  high NUMERIC,
+  low NUMERIC,
+  close NUMERIC,
+  volume BIGINT,
+  adj_close NUMERIC,
+  PRIMARY KEY (time, ticker)
 );
 
--- In production, you could later run (once TimescaleDB is installed):
---   CREATE EXTENSION IF NOT EXISTS timescaledb;
---   SELECT create_hypertable('price_history', 'time', if_not_exists => TRUE);
--- and configure chunking/compression policies.
+SELECT create_hypertable('price_history','time', if_not_exists => TRUE, chunk_time_interval => interval '7 days');
 
--- ============================================================
--- 3. FUNDAMENTALS TABLES
--- ============================================================
-
--- Quarterly fundamentals
+-- 4. fundamentals_quarterly
 CREATE TABLE IF NOT EXISTS fundamentals_quarterly (
-    id                SERIAL PRIMARY KEY,
-    ticker            VARCHAR(10) NOT NULL,
-    quarter           VARCHAR(10) NOT NULL,  -- e.g. '2024-Q3'
-    revenue           BIGINT,
-    net_income        BIGINT,
-    eps               NUMERIC(10,4),
-    operating_margin  NUMERIC(10,4),
-    roe               NUMERIC(10,4),
-    roa               NUMERIC(10,4),
-    pe_ratio          NUMERIC(10,4),
-    pb_ratio          NUMERIC(10,4),
-    created_at        TIMESTAMP DEFAULT NOW(),
-    FOREIGN KEY (ticker) REFERENCES companies(ticker)
+  id SERIAL PRIMARY KEY,
+  ticker VARCHAR(10) NOT NULL,
+  fiscal_year INT,
+  quarter VARCHAR(10),
+  period_start DATE,
+  period_end DATE,
+  revenue BIGINT,
+  gross_profit BIGINT,
+  operating_income BIGINT,
+  net_income BIGINT,
+  eps NUMERIC,
+  operating_margin NUMERIC,
+  roe NUMERIC,
+  roa NUMERIC,
+  pe_ratio NUMERIC,
+  pb_ratio NUMERIC,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
--- Annual fundamentals
+-- 5. fundamentals_annual
 CREATE TABLE IF NOT EXISTS fundamentals_annual (
-    id                SERIAL PRIMARY KEY,
-    ticker            VARCHAR(10) NOT NULL,
-    year              INTEGER NOT NULL,
-    revenue           BIGINT,
-    net_income        BIGINT,
-    eps               NUMERIC(10,4),
-    operating_margin  NUMERIC(10,4),
-    roe               NUMERIC(10,4),
-    roa               NUMERIC(10,4),
-    pe_ratio          NUMERIC(10,4),
-    pb_ratio          NUMERIC(10,4),
-    created_at        TIMESTAMP DEFAULT NOW(),
-    FOREIGN KEY (ticker) REFERENCES companies(ticker)
+  id SERIAL PRIMARY KEY,
+  ticker VARCHAR(10) NOT NULL,
+  fiscal_year INT,
+  revenue BIGINT,
+  net_income BIGINT,
+  eps NUMERIC,
+  operating_margin NUMERIC,
+  roe NUMERIC,
+  roa NUMERIC,
+  pe_ratio NUMERIC,
+  pb_ratio NUMERIC,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
--- ============================================================
--- 4. ANALYST ESTIMATES
--- ============================================================
+-- 6. analyst_estimates
 CREATE TABLE IF NOT EXISTS analyst_estimates (
-    id                SERIAL PRIMARY KEY,
-    ticker            VARCHAR(10) NOT NULL,
-    estimate_date     DATE NOT NULL,
-    eps_estimate      NUMERIC(10,4),
-    revenue_estimate  BIGINT,
-    price_target_low  NUMERIC(10,4),
-    price_target_avg  NUMERIC(10,4),
-    price_target_high NUMERIC(10,4),
-    analyst_rating    VARCHAR(32),
-    FOREIGN KEY (ticker) REFERENCES companies(ticker)
+  id SERIAL PRIMARY KEY,
+  ticker VARCHAR(10),
+  estimate_date DATE,
+  provider VARCHAR(100),
+  eps_estimate NUMERIC,
+  revenue_estimate BIGINT,
+  price_target_low NUMERIC,
+  price_target_avg NUMERIC,
+  price_target_high NUMERIC,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
--- ============================================================
--- 5. BUYBACKS
--- ============================================================
+-- 7. buybacks
 CREATE TABLE IF NOT EXISTS buybacks (
-    id                SERIAL PRIMARY KEY,
-    ticker            VARCHAR(10) NOT NULL,
-    announcement_date DATE NOT NULL,
-    amount            BIGINT,
-    remarks           TEXT,
-    FOREIGN KEY (ticker) REFERENCES companies(ticker)
+  id SERIAL PRIMARY KEY,
+  ticker VARCHAR(10),
+  announcement_date DATE,
+  amount BIGINT,
+  currency VARCHAR(10),
+  remarks TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
--- ============================================================
--- 6. CASHFLOW STATEMENTS
--- ============================================================
+-- 8. cashflow_statements
 CREATE TABLE IF NOT EXISTS cashflow_statements (
-    id       SERIAL PRIMARY KEY,
-    ticker   VARCHAR(10) NOT NULL,
-    period   VARCHAR(10) NOT NULL,  -- e.g. '2024-Q1'
-    cfo      BIGINT,                -- cash flow from operations
-    cfi      BIGINT,                -- cash flow from investing
-    cff      BIGINT,                -- cash flow from financing
-    capex    BIGINT,
-    FOREIGN KEY (ticker) REFERENCES companies(ticker)
+  id SERIAL PRIMARY KEY,
+  ticker VARCHAR(10),
+  period VARCHAR(10),
+  period_end DATE,
+  cfo BIGINT,
+  cfi BIGINT,
+  cff BIGINT,
+  capex BIGINT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
--- ============================================================
--- 7. DEBT PROFILE
--- ============================================================
+-- 9. debt_profile
 CREATE TABLE IF NOT EXISTS debt_profile (
-    id              SERIAL PRIMARY KEY,
-    ticker          VARCHAR(10) NOT NULL,
-    quarter         VARCHAR(10) NOT NULL,
-    short_term_debt BIGINT,
-    long_term_debt  BIGINT,
-    debt_to_equity  NUMERIC(10,4),
-    FOREIGN KEY (ticker) REFERENCES companies(ticker)
+  id SERIAL PRIMARY KEY,
+  ticker VARCHAR(10),
+  quarter VARCHAR(10),
+  as_of DATE,
+  short_term_debt BIGINT,
+  long_term_debt BIGINT,
+  total_debt BIGINT,
+  debt_to_equity NUMERIC,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
--- ============================================================
--- 8. INSIDER TRADES
--- ============================================================
+-- 10. insider_trades
 CREATE TABLE IF NOT EXISTS insider_trades (
-    id               SERIAL PRIMARY KEY,
-    ticker           VARCHAR(10) NOT NULL,
-    trade_date       DATE NOT NULL,
-    insider_name     VARCHAR(100),
-    transaction_type VARCHAR(20), -- 'BUY' / 'SELL'
-    shares           BIGINT,
-    price            NUMERIC(10,4),
-    value            NUMERIC(15,4),
-    FOREIGN KEY (ticker) REFERENCES companies(ticker)
+  id SERIAL PRIMARY KEY,
+  ticker VARCHAR(10),
+  insider_name TEXT,
+  relation TEXT,
+  trade_date DATE,
+  trade_type VARCHAR(10), -- buy/sell
+  shares BIGINT,
+  price NUMERIC,
+  value NUMERIC,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
--- ============================================================
--- INDEXES
--- ============================================================
+-- 11. indexes for performance
+CREATE INDEX IF NOT EXISTS idx_price_history_ticker_time ON price_history (ticker, time DESC);
+CREATE INDEX IF NOT EXISTS idx_companies_ticker ON companies (ticker);
+CREATE INDEX IF NOT EXISTS idx_fund_quarter_ticker ON fundamentals_quarterly (ticker, fiscal_year, quarter);
+CREATE INDEX IF NOT EXISTS idx_estimates_ticker_date ON analyst_estimates (ticker, estimate_date);
+CREATE INDEX IF NOT EXISTS idx_buybacks_ticker_date ON buybacks (ticker, announcement_date);
+CREATE INDEX IF NOT EXISTS idx_debt_ticker_asof ON debt_profile (ticker, as_of);
 
--- Companies
-CREATE INDEX IF NOT EXISTS idx_companies_ticker      ON companies(ticker);
-CREATE INDEX IF NOT EXISTS idx_companies_sector      ON companies(sector);
-CREATE INDEX IF NOT EXISTS idx_companies_industry    ON companies(industry);
-CREATE INDEX IF NOT EXISTS idx_companies_market_cap  ON companies(market_cap);
+-- 12. sample materialized view for daily aggregates (refresh via cron)
+CREATE MATERIALIZED VIEW IF NOT EXISTS mv_daily_ohlc AS
+SELECT
+  time::date AS day,
+  ticker,
+  first(open, time) AS open,
+  max(high) AS high,
+  min(low) AS low,
+  last(close, time) AS close,
+  sum(volume) AS volume
+FROM price_history
+GROUP BY day, ticker;
 
--- Price History
-CREATE INDEX IF NOT EXISTS idx_price_history_ticker_time
-    ON price_history(ticker, time DESC);
+-- 13. grants (example)
+CREATE ROLE app_readonly NOLOGIN;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO app_readonly;
 
--- Fundamentals
-CREATE INDEX IF NOT EXISTS idx_fundamentals_q_ticker
-    ON fundamentals_quarterly(ticker);
-CREATE INDEX IF NOT EXISTS idx_fundamentals_q_quarter
-    ON fundamentals_quarterly(quarter);
-
-CREATE INDEX IF NOT EXISTS idx_fundamentals_a_ticker
-    ON fundamentals_annual(ticker);
-CREATE INDEX IF NOT EXISTS idx_fundamentals_a_year
-    ON fundamentals_annual(year);
-
--- Analyst Estimates
-CREATE INDEX IF NOT EXISTS idx_analyst_ticker_date
-    ON analyst_estimates(ticker, estimate_date DESC);
-
--- Composite index for screener queries
-CREATE INDEX IF NOT EXISTS idx_screener_fundamentals
-    ON fundamentals_quarterly(ticker, pe_ratio, roe, operating_margin);
-
--- Time-series helper index
-CREATE INDEX IF NOT EXISTS idx_time_series_queries
-    ON price_history(time, ticker, close);
+    
