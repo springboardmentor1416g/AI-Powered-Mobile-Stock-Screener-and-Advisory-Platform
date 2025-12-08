@@ -6,7 +6,6 @@ from datetime import datetime
 import time
 import os
 from dotenv import load_dotenv
-import psycopg2
 
 # Load .env file
 load_dotenv()
@@ -105,15 +104,16 @@ def bulk_import():
                 time.sleep(0.1)
 
             except Exception as e:
-                print(f"⚠ Error processing {ticker}: {e}")
+                print(f"Error processing {ticker}: {e}")
                 conn.rollback()
 
+  
         cur.close()
         conn.close()
-        print("\n Import Complete! Database is updated.")
+        print("\nImport Complete! Database is updated.")
 
     except Exception as e:
-        print(f" Critical DB Error: {e}")
+        print(f"Critical DB Error: {e}")
 
 if __name__ == "__main__":
     bulk_import()
