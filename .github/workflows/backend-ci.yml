@@ -1,0 +1,40 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # If your backend is Node.js, keep this. If it's something else, adjust later.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm install
+        continue-on-error: true  # remove later when backend is ready
+
+      - name: Run tests
+        working-directory: ./backend
+        run: npm test
+        continue-on-error: true  # remove later when tests exist
+
+      - name: Build backend (placeholder)
+        working-directory: ./backend
+        run: echo "Build backend here (e.g., npm run build, gradle build, etc.)"
+
+      - name: Build Docker image (placeholder)
+        run: |
+          echo "docker build -t your-backend-image:latest ."
+          echo "docker push your-backend-image:latest"

@@ -1,0 +1,27 @@
+name: Frontend CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  frontend-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node (React Native placeholder)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install frontend dependencies
+        run: echo "Install frontend dependencies here"
+
+      - name: Run frontend tests
+        run: echo "Run frontend tests here"
+
+      - name: Build mobile app (placeholder)
+        run: echo "Build React Native app here"
