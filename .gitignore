@@ -34,3 +34,4 @@ projects/auth_session/docs/generated/
 node_modules/
 dist/
 build/
+.env
