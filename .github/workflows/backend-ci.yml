@@ -1,0 +1,45 @@
+name: Backend CI
+
+# Run on pushes and pull requests to any branch
+on:
+  push:
+    branches:
+      - ''        # this includes all branches including your own
+  pull_request:
+    branches:
+      - ''
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout your branch code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Setup Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./backend
+
+      # Step 4: Run linting
+      - name: Run ESLint
+        run: npm run lint
+        working-directory: ./backend
+
+      # Step 5: Run tests
+      - name: Run Tests
+        run: npm test
+        working-directory: ./backend
+
+      # Step 6: Build Docker image (optional for CI, but needed for CD)
+      - name: Build Docker image
+        run: |
+          docker build -t backend-image ./backend
