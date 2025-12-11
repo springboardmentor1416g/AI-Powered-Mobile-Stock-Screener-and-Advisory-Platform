@@ -1,24 +1,26 @@
 """
-Data Ingestion Script
+Data Ingestion Script (UPDATED)
 
-This script:
-1. Calls the market_data_service to get price history.
-2. Saves the raw API response into storage/raw/YYYY-MM-DD/symbol.json
-3. (Optionally) Inserts the data into the price_history table in PostgreSQL.
-
-For now, this is a simple example for a few tickers.
+This script now does:
+1. Fetch price history from API
+2. Save raw API JSON to /storage/raw/
+3. Convert JSON to CSV for validation
+4. Run validation script BEFORE inserting into DB
+5. Insert into DB ONLY if validation passes
 """
 
 import os
 import json
 from datetime import datetime
+import csv
+import subprocess
+import sys
 
-import psycopg2  # used to connect to PostgreSQL
-
+import psycopg2
 from backend.services.market_data_service import fetch_daily_price_history
 
 
-# Database connection settings (from environment or defaults)
+# Database connection settings
 DB_NAME = os.getenv("DB_NAME", "stock_screener")
 DB_USER = os.getenv("DB_USER", "postgres")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
@@ -26,10 +28,10 @@ DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = os.getenv("DB_PORT", "5432")
 
 RAW_BASE_DIR = os.path.join("storage", "raw")
+PROCESSED_BASE_DIR = os.path.join("data", "processed", "price")
 
 
 def get_db_connection():
-    """Create and return a PostgreSQL connection."""
     conn = psycopg2.connect(
         dbname=DB_NAME,
         user=DB_USER,
@@ -41,9 +43,6 @@ def get_db_connection():
 
 
 def save_raw_json(symbol: str, data: dict):
-    """
-    Save raw JSON to storage/raw/YYYY-MM-DD/<symbol>.json
-    """
     today = datetime.now().strftime("%Y-%m-%d")
     folder_path = os.path.join(RAW_BASE_DIR, today)
     os.makedirs(folder_path, exist_ok=True)
@@ -52,57 +51,102 @@ def save_raw_json(symbol: str, data: dict):
     with open(file_path, "w") as f:
         json.dump(data, f, indent=2)
 
-    print(f"[RAW] Saved raw data for {symbol} to {file_path}")
+    print(f"[RAW] Saved raw data for {symbol} → {file_path}")
+
+
+def convert_to_csv(symbol: str, data: dict):
+    """
+    Convert API JSON → CSV for validation
+    """
+    os.makedirs(PROCESSED_BASE_DIR, exist_ok=True)
+    csv_path = os.path.join(PROCESSED_BASE_DIR, f"{symbol}_price.csv")
+
+    time_series = data.get("Time Series (Daily)", {})
+
+    with open(csv_path, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["ticker", "date", "open", "high", "low", "close", "volume"])
+
+        for date_str, v in time_series.items():
+            writer.writerow([
+                symbol,
+                date_str,
+                v["1. open"],
+                v["2. high"],
+                v["3. low"],
+                v["4. close"],
+                v["5. volume"],
+            ])
+
+    print(f"[CSV] Wrote CSV for {symbol} → {csv_path}")
+    return csv_path
+
+
+def validate_csv(csv_path):
+    """
+    Run the validation script.
+    If validation has HIGH issues → return False
+    Else return True
+    """
+    result = subprocess.run([
+        sys.executable,
+        "backend/services/data_validation/validate_data.py",
+        "--input",
+        csv_path
+    ])
+
+    if result.returncode == 2:
+        print("[VALIDATION] HIGH severity issues found → BLOCKING DB insert")
+        return False
+
+    print("[VALIDATION] Passed")
+    return True
 
 
 def insert_price_history(symbol: str, data: dict):
-    """
-    Parse Alpha Vantage TIME_SERIES_DAILY JSON and insert into price_history table.
-    This assumes price_history(time, ticker, open, high, low, close, volume) exists.
-    """
     time_series = data.get("Time Series (Daily)", {})
 
     conn = get_db_connection()
     cur = conn.cursor()
 
     for date_str, values in time_series.items():
-        insert_query = """
+        query = """
         INSERT INTO price_history (time, ticker, open, high, low, close, volume)
         VALUES (%s, %s, %s, %s, %s, %s, %s)
         ON CONFLICT (time, ticker) DO NOTHING;
         """
-        cur.execute(
-            insert_query,
-            (
-                date_str + " 09:15:00",           # timestamp
-                symbol,
-                float(values["1. open"]),
-                float(values["2. high"]),
-                float(values["3. low"]),
-                float(values["4. close"]),
-                int(float(values["5. volume"])),
-            ),
-        )
+        cur.execute(query, (
+            date_str + " 09:15:00",
+            symbol,
+            float(values["1. open"]),
+            float(values["2. high"]),
+            float(values["3. low"]),
+            float(values["4. close"]),
+            int(float(values["5. volume"])),
+        ))
 
     conn.commit()
     cur.close()
     conn.close()
-    print(f"[DB] Inserted price history rows for {symbol}")
+    print(f"[DB] Inserted price rows for {symbol}")
 
 
 def run_ingestion():
-    """
-    Run ingestion for a small list of symbols.
-    """
-    symbols = ["AAPL", "MSFT", "GOOGL"]  # example tickers
+    symbols = ["AAPL", "MSFT", "GOOGL"]
 
     for symbol in symbols:
-        print(f"=== Ingesting {symbol} ===")
+        print(f"\n=== Ingesting {symbol} ===")
         data = fetch_daily_price_history(symbol)
-        save_raw_json(symbol, data)
-        insert_price_history(symbol, data)
 
-    print("Ingestion complete.")
+        save_raw_json(symbol, data)
+        csv_path = convert_to_csv(symbol, data)
+
+        if validate_csv(csv_path):
+            insert_price_history(symbol, data)
+        else:
+            print(f"[SKIPPED] DB insert skipped for {symbol}")
+
+    print("\nIngestion complete.")
 
 
 if __name__ == "__main__":
