@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  backend:
+    container_name: backend_staging
+    image: "${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+    restart: always
+
+    environment:
+      # Application mode
+      NODE_ENV: "production"
+
+      # Database
+      DATABASE_URL: "${STAGING_DATABASE_URL}"
+
+      # Auth
+      JWT_SECRET: "${JWT_SECRET}"
+
+      # Optional DB Pool
+      DATABASE_POOL_MIN: "${DATABASE_POOL_MIN:-2}"
+      DATABASE_POOL_MAX: "${DATABASE_POOL_MAX:-20}"
+
+    ports:
+      - "8080:8080"
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/api/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# NOTES:
+# 1. The staging deploy workflow sets:
+#    - DOCKER_REGISTRY
+#    - IMAGE_NAME
+#    - IMAGE_TAG
+#    - STAGING_DATABASE_URL
+#    - JWT_SECRET
+#
+# 2. Deploy with:
+#    docker compose --env-file .env.staging up -d
+#
+# 3. Migrations are handled by GitHub Actions BEFORE the container is started.
