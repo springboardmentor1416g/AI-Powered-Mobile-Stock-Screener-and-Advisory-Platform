@@ -1,17 +1,44 @@
 # Market Data Ingestion Setup
 
-This module integrates a free/sandbox market data provider and
-creates a pipeline for storing metadata and historical OHLCV pricing.
+This document explains how market data is fetched from the provider,
+stored in the raw storage layer, processed, and finally inserted into
+the TimescaleDB database.
 
-## Steps Implemented
-1. API integration module created in `backend/services/market_data_service.py`
-2. Data ingestion job created in `backend/ingestion/data_ingestion.py`
-3. Raw API JSON responses stored in `storage/raw/`
-4. TimescaleDB hypertable `price_history` populated
-5. Validation SQL added in `backend/ingestion/db_validation.sql`
-6. Logging enabled through `/logs/`
+## Components
 
-## Requirements
-- API key stored in environment variable `MARKETDATA_API_KEY`
-- PostgreSQL + TimescaleDB running
-- Python dependencies installed (requests, psycopg2)
+### 1. Market Data API Module
+Located at:
+`backend/services/market_data_service.py`
+
+Responsibilities:
+- Fetch company metadata
+- Fetch historical OHLCV data
+- Wrap provider API responses
+
+### 2. Ingestion Pipeline
+Located at:
+`backend/ingestion/data_ingestion.py`
+
+Responsibilities:
+- Download market data for selected tickers
+- Save raw JSON to storage (`storage/raw/YYYY-MM-DD/`)
+- Normalize and insert data into `price_history`
+- Commit data to TimescaleDB
+
+### 3. Raw Storage Layer
+Folder:
+`storage/raw/`
+
+This folder keeps unmodified API snapshots that help in debugging and auditing.
+
+### 4. Database Validation
+SQL script:
+`backend/ingestion/db_validation.sql`
+
+Validates:
+- Record count per ticker
+- Newest timestamps
+- Data freshness
+
+## Running Ingestion
+
