@@ -1,9 +1,0 @@
-# .env.sample - copy to .env and fill values
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/stock_screener
-MARKETDATA_PROVIDER=alphavantage
-MARKETDATA_API_KEY=YOUR_ALPHA_VANTAGE_KEY
-MARKETDATA_BASE_URL=https://www.alphavantage.co
-RAW_STORAGE_PATH=./storage/raw
-INGEST_BATCH_SIZE=10
-REQUESTS_PER_MINUTE=5
-LOG_LEVEL=INFO
