@@ -3,9 +3,9 @@ name: Frontend CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, noma ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop, noma ]
 
 jobs:
   build-react-native:
