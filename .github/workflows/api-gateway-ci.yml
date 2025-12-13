@@ -1,0 +1,42 @@
+name: API Gateway CI
+
+on:
+  push:
+    branches: [ "panchami" ]
+    paths:
+      - "backend/api-gateway/**"
+      - ".github/workflows/api-gateway-ci.yml"
+  pull_request:
+    branches: [ "panchami" ]
+    paths:
+      - "backend/api-gateway/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        working-directory: backend/api-gateway
+        run: npm install
+
+      - name: Lint Check (Basic)
+        working-directory: backend/api-gateway
+        run: |
+          echo "No linter configured. Skipping..."
+
+      - name: Run Tests Placeholder
+        working-directory: backend/api-gateway
+        run: |
+          echo "No tests implemented yet"
+
+      - name: Build Completion Message
+        run: echo "API Gateway CI Finished Successfully"
