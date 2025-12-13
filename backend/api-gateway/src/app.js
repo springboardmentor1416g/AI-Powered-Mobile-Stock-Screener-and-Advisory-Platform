@@ -1,25 +1,41 @@
 import express from "express";
+import morgan from "morgan";
 import dotenv from "dotenv";
-import healthRoutes from "./routes/health.js";
-import metadataRoutes from "./routes/metadata.js";
-import requestLogger from "./middleware/requestLogger.js";
-import errorHandler from "./middleware/errorHandler.js";
 
-dotenv.config({ path: `.env.${process.env.ENVIRONMENT || "dev"}` });
+dotenv.config({
+  path: `.env.${process.env.ENVIRONMENT || "dev"}`
+});
+
+// Import Routes
+import authRoutes from "./routes/auth.js";
+import watchlistRoutes from "./routes/watchlist.js";
 
 const app = express();
+
+// Middleware
 app.use(express.json());
-app.use(requestLogger);
+app.use(morgan("dev"));
 
-// API versioning
-app.use("/api/v1/health", healthRoutes);
-app.use("/api/v1/metadata", metadataRoutes);
-
-// Error handler
-app.use(errorHandler);
-
-const PORT = process.env.PORT || 8080;
-
-app.listen(PORT, () => {
-  console.log(`API Gateway running on port ${PORT}`);
+// ----------- Health Check Route -----------
+app.get("/api/v1/health", (req, res) => {
+  res.json({
+    status: "OK",
+    environment: process.env.ENVIRONMENT,
+    timestamp: new Date().toISOString()
+  });
 });
+
+// ----------- Main API Routes -----------
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/watchlist", watchlistRoutes);
+
+// ----------- Global Error Handler -----------
+app.use((err, req, res, next) => {
+  console.error("Global Error:", err);
+  res.status(500).json({
+    status: "error",
+    message: err.message || "Internal Server Error"
+  });
+});
+
+export default app;
