@@ -1,4 +1,20 @@
-# CI/CD & Environment Setup Guide
+# CI/CD & Environment Setup
+
+## Local Development
+- Uses Docker Compose
+- Database: PostgreSQL + TimescaleDB
+
+## CI Pipeline
+- Runs on feature branches and PRs
+- Steps:
+  - Install dependencies
+  - Run tests
+  - Run DB migrations
+  - Build Docker image
+
+## Branch Strategy
+- Feature branches: development work
+- Main branch: production-ready code
 
 ## Environments
 - Dev
@@ -15,8 +31,7 @@ Run SQL from /infrastructure/database_setup.sql to create:
 - stock_screener_staging
 - stock_screener_prod
 
-## Secrets
-Use GitHub Secrets:
+## Use GitHub Secrets:
 - DB_HOST_DEV
 - DB_HOST_STAGING
 - DB_HOST_PROD

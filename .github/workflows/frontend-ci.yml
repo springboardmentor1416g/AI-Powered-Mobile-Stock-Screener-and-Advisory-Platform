@@ -1,51 +1,42 @@
 name: Frontend CI
 
-# Trigger on pushes and PRs for all branches
 on:
   push:
     branches:
-      - ''
+      - feature/*
   pull_request:
     branches:
-      - ''
+      - main
 
 jobs:
-  build-test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the branch code
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      # Step 2: Setup Node.js environment
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
 
-      # Step 3: Install dependencies
-      - name: Install dependencies
-        run: npm install
-        working-directory: ./frontend
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm install
 
-      # Step 4: Run linting
-      - name: Run ESLint
-        run: npm run lint
-        working-directory: ./frontend
+    - name: Run ESLint
+      run: |
+        cd frontend
+        npm run lint
 
-      # Step 5: Run unit tests
-      - name: Run unit tests
-        run: npm test
-        working-directory: ./frontend
+    - name: Run unit tests
+      run: |
+        cd frontend
+        npm test
 
-      # Step 6: Generate Android/iOS build artifacts (placeholder)
-      - name: Build Android APK
-        run: |
-          cd frontend
-          npx react-native build-android || echo "Android build placeholder"
-
-      - name: Build iOS IPA
-        run: |
-          cd frontend
-          echo "iOS build placeholder for CI"
+    - name: Build Android APK
+      run: |
+        cd frontend
+        npx react-native build-android

@@ -1,45 +1,49 @@
 name: Backend CI
 
-# Run on pushes and pull requests to any branch
 on:
   push:
     branches:
-      - ''        # this includes all branches including your own
+      - feature/*
   pull_request:
     branches:
-      - ''
+      - main
 
 jobs:
-  build-test:
+  build-and-test:
     runs-on: ubuntu-latest
 
+    env:
+      DB_HOST: ${{ secrets.DB_HOST_DEV }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
     steps:
-      # Step 1: Checkout your branch code
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      # Step 2: Setup Node.js environment
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
 
-      # Step 3: Install dependencies
-      - name: Install dependencies
-        run: npm install
-        working-directory: ./backend
+    - name: Install dependencies
+      run: |
+        pip install -r backend/requirements.txt
 
-      # Step 4: Run linting
-      - name: Run ESLint
-        run: npm run lint
-        working-directory: ./backend
+    - name: Run tests
+      run: |
+        cd backend
+        pytest
 
-      # Step 5: Run tests
-      - name: Run Tests
-        run: npm test
-        working-directory: ./backend
+    - name: Build Docker image
+      run: |
+        docker build -t your-dockerhub-username/backend:latest backend/
 
-      # Step 6: Build Docker image (optional for CI, but needed for CD)
-      - name: Build Docker image
-        run: |
-          docker build -t backend-image ./backend
+    - name: Push Docker image
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    - run: docker push your-dockerhub-username/backend:latest
