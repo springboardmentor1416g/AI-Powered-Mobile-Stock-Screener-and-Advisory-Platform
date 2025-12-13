@@ -4,4 +4,3 @@ pandas_market_calendars
 numpy
 scipy
 requests
-yfinance

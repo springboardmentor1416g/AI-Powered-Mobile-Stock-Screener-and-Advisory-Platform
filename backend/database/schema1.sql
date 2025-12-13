@@ -89,16 +89,8 @@ CREATE INDEX idx_fundamentals_quarterly_eps ON fundamentals_quarterly(eps);
 CREATE INDEX idx_analyst_estimates_ticker ON analyst_estimates(ticker);
 CREATE INDEX idx_analyst_estimates_date ON analyst_estimates(estimate_date);
 
--- REMOVE old single-column indexes on price_history
-DROP INDEX IF EXISTS idx_price_history_ticker;
-DROP INDEX IF EXISTS idx_price_history_time;
-
-CREATE INDEX idx_price_history_ticker_time
-ON price_history (ticker, time DESC);
-
-CREATE INDEX idx_price_history_recent 
-ON price_history (ticker, time DESC) 
-WHERE time >= NOW() - INTERVAL '1 year';
+CREATE INDEX idx_price_history_ticker ON price_history(ticker);
+CREATE INDEX idx_price_history_time ON price_history(time);
 
 CREATE INDEX idx_buybacks_ticker ON buybacks(ticker);
 CREATE INDEX idx_buybacks_date ON buybacks(announcement_date);
@@ -106,31 +98,18 @@ CREATE INDEX idx_buybacks_date ON buybacks(announcement_date);
 CREATE INDEX idx_cashflow_ticker ON cashflow_statements(ticker);
 CREATE INDEX idx_cashflow_period ON cashflow_statements(period);
 
-SELECT ticker FROM companies;
+CREATE INDEX idx_debt_profile_ticker ON debt_profile(ticker);
+CREATE INDEX idx_debt_profile_quarter ON debt_profile(quarter);
+
+-- Count rows in each table
+SELECT COUNT(*) FROM companies;
 SELECT COUNT(*) FROM price_history;
 SELECT COUNT(*) FROM fundamentals_quarterly LIMIT 10;
 SELECT COUNT(*) FROM analyst_estimates;
-SELECT COUNT(*) FROM buybacks;
-SELECT COUNT(*) FROM cashflow_statements;
-SELECT COUNT(*) FROM debt_profile;
 
-SELECT * 
-FROM price_history 
-WHERE ticker = 'TSLA'
-ORDER BY time DESC
-LIMIT 5;
+SELECT ticker FROM companies LIMIT 100;
 
-SELECT *
-FROM price_history
-WHERE ticker = 'AAPL'
-ORDER BY time DESC
-LIMIT 5;
-
-SELECT ticker, COUNT(*)
-FROM price_history
-GROUP BY ticker;
-
-SELECT ticker, name, exchange, sector, industry, market_cap
-FROM companies
-LIMIT 5;
-
+-- Latest price > 1000
+SELECT p.ticker, p.close
+FROM price_history p
+WHERE p.close > 1000;
