@@ -1,0 +1,64 @@
+[2025-12-13T18:50:19.374Z] Starting market data ingestion
+[2025-12-13T18:50:19.375Z] Fetching metadata for AAPL
+[2025-12-13T18:50:21.014Z] Fetching OHLCV data for AAPL
+[2025-12-13T18:50:21.468Z] ERROR ingesting AAPL: No time series found for AAPL
+[2025-12-13T18:50:21.468Z] Fetching metadata for MSFT
+[2025-12-13T18:50:21.919Z] Fetching OHLCV data for MSFT
+[2025-12-13T18:50:22.854Z] Successfully ingested MSFT
+[2025-12-13T18:50:22.855Z] Fetching metadata for GOOGL
+[2025-12-13T18:50:23.302Z] Fetching OHLCV data for GOOGL
+[2025-12-13T18:50:23.866Z] Successfully ingested GOOGL
+[2025-12-13T18:50:23.866Z] Fetching metadata for AMZN
+[2025-12-13T18:50:24.319Z] Fetching OHLCV data for AMZN
+[2025-12-13T18:50:24.948Z] Successfully ingested AMZN
+[2025-12-13T18:50:24.948Z] Fetching metadata for META
+[2025-12-13T18:50:25.399Z] Fetching OHLCV data for META
+[2025-12-13T18:50:25.991Z] Successfully ingested META
+[2025-12-13T18:50:25.992Z] Fetching metadata for NVDA
+[2025-12-13T18:50:26.438Z] Fetching OHLCV data for NVDA
+[2025-12-13T18:50:27.147Z] Successfully ingested NVDA
+[2025-12-13T18:50:27.147Z] Fetching metadata for TSLA
+[2025-12-13T18:50:27.597Z] Fetching OHLCV data for TSLA
+[2025-12-13T18:50:28.140Z] Successfully ingested TSLA
+[2025-12-13T18:50:28.141Z] Fetching metadata for INTC
+[2025-12-13T18:50:28.589Z] Fetching OHLCV data for INTC
+[2025-12-13T18:50:29.039Z] ERROR ingesting INTC: No time series found for INTC
+[2025-12-13T18:50:29.040Z] Fetching metadata for AMD
+[2025-12-13T18:50:29.501Z] Fetching OHLCV data for AMD
+[2025-12-13T18:50:30.292Z] ERROR ingesting AMD: No time series found for AMD
+[2025-12-13T18:50:30.292Z] Fetching metadata for NFLX
+[2025-12-13T18:50:30.770Z] Fetching OHLCV data for NFLX
+[2025-12-13T18:50:31.346Z] ERROR ingesting NFLX: No time series found for NFLX
+[2025-12-13T18:50:31.347Z] Market data ingestion completed
+[2025-12-13T18:52:01.970Z] Starting market data ingestion
+[2025-12-13T18:52:01.971Z] Fetching metadata for AAPL
+[2025-12-13T18:52:03.744Z] Fetching OHLCV data for AAPL
+[2025-12-13T18:52:04.175Z] ERROR ingesting AAPL: No time series found for AAPL
+[2025-12-13T18:52:04.175Z] Fetching metadata for MSFT
+[2025-12-13T18:52:04.783Z] Fetching OHLCV data for MSFT
+[2025-12-13T18:52:05.213Z] ERROR ingesting MSFT: No time series found for MSFT
+[2025-12-13T18:52:05.213Z] Fetching metadata for GOOGL
+[2025-12-13T18:52:05.709Z] Fetching OHLCV data for GOOGL
+[2025-12-13T18:52:06.590Z] Successfully ingested GOOGL
+[2025-12-13T18:52:06.591Z] Fetching metadata for AMZN
+[2025-12-13T18:52:07.057Z] Fetching OHLCV data for AMZN
+[2025-12-13T18:52:07.544Z] Successfully ingested AMZN
+[2025-12-13T18:52:07.544Z] Fetching metadata for META
+[2025-12-13T18:52:08.371Z] Fetching OHLCV data for META
+[2025-12-13T18:52:09.546Z] Successfully ingested META
+[2025-12-13T18:52:09.547Z] Fetching metadata for NVDA
+[2025-12-13T18:52:10.157Z] Fetching OHLCV data for NVDA
+[2025-12-13T18:52:10.713Z] ERROR ingesting NVDA: No time series found for NVDA
+[2025-12-13T18:52:10.714Z] Fetching metadata for TSLA
+[2025-12-13T18:52:11.313Z] Fetching OHLCV data for TSLA
+[2025-12-13T18:52:11.749Z] ERROR ingesting TSLA: No time series found for TSLA
+[2025-12-13T18:52:11.749Z] Fetching metadata for INTC
+[2025-12-13T18:52:12.458Z] Fetching OHLCV data for INTC
+[2025-12-13T18:52:12.887Z] ERROR ingesting INTC: No time series found for INTC
+[2025-12-13T18:52:12.888Z] Fetching metadata for AMD
+[2025-12-13T18:52:13.316Z] Fetching OHLCV data for AMD
+[2025-12-13T18:52:14.201Z] Successfully ingested AMD
+[2025-12-13T18:52:14.202Z] Fetching metadata for NFLX
+[2025-12-13T18:52:14.630Z] Fetching OHLCV data for NFLX
+[2025-12-13T18:52:15.124Z] Successfully ingested NFLX
+[2025-12-13T18:52:15.125Z] Market data ingestion completed

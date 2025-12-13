@@ -9,7 +9,7 @@
 -- psql -d stock_screener -c "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"
 
 -- 1) Create extension (if not already enabled)
-CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
+--CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 
 -- 2) Companies table (master registry)
 CREATE TABLE IF NOT EXISTS companies (
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS price_history (
 COMMENT ON TABLE price_history IS 'OHLCV time-series stored as TimescaleDB hypertable';
 
 -- Convert to hypertable (idempotent)
-SELECT create_hypertable('price_history', 'time', if_not_exists => true);
+--SELECT create_hypertable('price_history', 'time', if_not_exists => true);
 
 -- Add basic FK note (we do NOT enforce FK on every timeseries insert for performance, but provide example)
 -- If you want strict FK: uncomment the following (may slow bulk inserts):
