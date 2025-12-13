@@ -1,12 +1,13 @@
 import os
-import json
 from datetime import datetime
+
 import psycopg2
 from psycopg2.extras import execute_batch
 from dotenv import load_dotenv
+import yfinance as yf
 
-from backend.services.market_data_service import get_daily_ohlcv
 
+# Load environment variables from .env.dev
 load_dotenv(".env.dev")
 
 DB_CONFIG = {
@@ -17,73 +18,128 @@ DB_CONFIG = {
     "password": os.getenv("DB_PASSWORD"),
 }
 
-RAW_BASE_PATH = "storage/raw"
+# List of stock tickers to ingest
+TICKERS = ["AAPL", "MSFT", "GOOGL", "IBM", "TSLA"]
 
 
-def ensure_dir(path):
-    os.makedirs(path, exist_ok=True)
+def get_db_connection():
+    """Create and return a PostgreSQL database connection."""
+    return psycopg2.connect(**DB_CONFIG)
 
 
-def run_price_ingestion():
-    print("Starting market price ingestion...")
+def fetch_company_metadata(ticker):
+    """
+    Fetch company metadata using Yahoo Finance.
+    Returns a dictionary containing basic company details.
+    """
+    stock = yf.Ticker(ticker)
+    info = stock.info
 
-    tickers = [
-        "INFY.NS",
-        "TCS.NS",
-        "RELIANCE.NS",
-        "HDFCBANK.NS",
-        "ICICIBANK.NS",
-    ]
+    if not info or "symbol" not in info:
+        print(f"No metadata found for {ticker}")
+        return None
 
-    today = datetime.now().strftime("%Y-%m-%d")
-    raw_path = os.path.join(RAW_BASE_PATH, today)
-    ensure_dir(raw_path)
+    return {
+        "ticker": ticker,
+        "name": info.get("longName"),
+        "exchange": info.get("exchange"),
+        "sector": info.get("sector"),
+        "industry": info.get("industry"),
+        "market_cap": info.get("marketCap"),
+    }
 
-    conn = psycopg2.connect(**DB_CONFIG)
+
+def fetch_price_history(ticker):
+    """
+    Fetch daily OHLCV price history for the last 6 months.
+    Returns a list of tuples ready for database insertion.
+    """
+    stock = yf.Ticker(ticker)
+    df = stock.history(period="6mo", interval="1d")
+
+    if df.empty:
+        print(f"No price data found for {ticker}")
+        return []
+
+    records = []
+    for date, row in df.iterrows():
+        records.append((
+            date.to_pydatetime(),
+            ticker,
+            float(row["Open"]),
+            float(row["High"]),
+            float(row["Low"]),
+            float(row["Close"]),
+            int(row["Volume"]),
+        ))
+
+    return records
+
+
+def run_ingestion():
+    """
+    Main ingestion pipeline.
+    Inserts company metadata and historical price data into the database.
+    """
+    print("Starting data ingestion pipeline")
+
+    conn = get_db_connection()
     cursor = conn.cursor()
 
-    insert_sql = """
-        INSERT INTO price_history
-        (time, ticker, open, high, low, close, volume)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-        ON CONFLICT DO NOTHING;
-    """
+    for ticker in TICKERS:
+        print(f"Processing ticker: {ticker}")
 
-    for ticker in tickers:
-        print(f"Fetching price data for {ticker}...")
-        data = get_daily_ohlcv(ticker)
-
-        if not data:
-            print(f"No data for {ticker}, skipping.")
-            continue
-
-        # Save raw JSON
-        with open(os.path.join(raw_path, f"{ticker}.json"), "w") as f:
-            json.dump(data, f, indent=2)
-
-        records = []
-        for date_str, values in data.items():
-            records.append(
+        # Insert or update company metadata
+        metadata = fetch_company_metadata(ticker)
+        if metadata:
+            cursor.execute(
+                """
+                INSERT INTO companies (ticker, name, exchange, sector, industry, market_cap)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                ON CONFLICT (ticker) DO UPDATE
+                SET
+                    name = EXCLUDED.name,
+                    exchange = EXCLUDED.exchange,
+                    sector = EXCLUDED.sector,
+                    industry = EXCLUDED.industry,
+                    market_cap = EXCLUDED.market_cap;
+                """,
                 (
-                    date_str,
-                    ticker,
-                    values["open"],
-                    values["high"],
-                    values["low"],
-                    values["close"],
-                    values["volume"],
+                    metadata["ticker"],
+                    metadata["name"],
+                    metadata["exchange"],
+                    metadata["sector"],
+                    metadata["industry"],
+                    metadata["market_cap"],
                 )
             )
+            conn.commit()
+            print(f"Metadata stored for {ticker}")
 
-        execute_batch(cursor, insert_sql, records)
+        # Insert historical price data
+        price_records = fetch_price_history(ticker)
+        if not price_records:
+            print(f"No price records to insert for {ticker}")
+            continue
+
+        execute_batch(
+            cursor,
+            """
+            INSERT INTO price_history (time, ticker, open, high, low, close, volume)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT DO NOTHING;
+            """,
+            price_records
+        )
+
         conn.commit()
-
-        print(f"Inserted {len(records)} rows for {ticker}")
+        print(f"Inserted {len(price_records)} price rows for {ticker}")
 
     cursor.close()
     conn.close()
-    print("Price ingestion completed.")
+
+    print("Data ingestion completed successfully")
 
 
 if __name__ == "__main__":
-    run_price_ingestion()
+    run_ingestion()
