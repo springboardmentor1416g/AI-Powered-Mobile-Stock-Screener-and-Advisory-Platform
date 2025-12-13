@@ -1,55 +1,48 @@
-import os
-import requests
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv(".env.dev")
-
-API_KEY = os.getenv("MARKETDATA_API_KEY")
-BASE_URL = os.getenv("MARKETDATA_BASE_URL")
+import yfinance as yf
 
 
-def get_daily_ohlcv(symbol):
+def get_daily_ohlcv(symbol, period="1y"):
     """
-    Fetch daily OHLCV time-series data from Alpha Vantage
-    Uses TIME_SERIES_DAILY_ADJUSTED
+    Fetch daily OHLCV price data for a stock.
+    Returns dict keyed by date.
     """
-    params = {
-        "function": "TIME_SERIES_DAILY_ADJUSTED",
-        "symbol": symbol,
-        "apikey": API_KEY,
-        "outputsize": "compact"
-    }
+    ticker = yf.Ticker(symbol)
+    hist = ticker.history(period=period)
 
-    response = requests.get(BASE_URL, params=params)
-    data = response.json()
-
-    if "Time Series (Daily)" not in data:
-        print(f"Warning: No time series data returned for {symbol}")
-        print("API response:", data)
+    if hist.empty:
+        print(f"No price data returned for {symbol}")
         return {}
 
-    return data["Time Series (Daily)"]
+    data = {}
+    for index, row in hist.iterrows():
+        date_str = index.strftime("%Y-%m-%d")
+        data[date_str] = {
+            "open": float(row["Open"]),
+            "high": float(row["High"]),
+            "low": float(row["Low"]),
+            "close": float(row["Close"]),
+            "volume": int(row["Volume"]),
+        }
+
+    return data
 
 
 def get_company_metadata(symbol):
     """
-    Fetch company metadata such as:
-    name, exchange, sector, industry, market cap
+    Fetch company metadata such as name, sector, industry, market cap.
     """
-    params = {
-        "function": "OVERVIEW",
-        "symbol": symbol,
-        "apikey": API_KEY
-    }
+    ticker = yf.Ticker(symbol)
+    info = ticker.info
 
-    response = requests.get(BASE_URL, params=params)
-    data = response.json()
-
-    # Valid metadata must contain Symbol
-    if not data or "Symbol" not in data:
-        print(f"Warning: No metadata returned for {symbol}")
-        print("API response:", data)
+    if not info:
+        print(f"No metadata returned for {symbol}")
         return None
 
-    return data
+    return {
+        "ticker": symbol,
+        "name": info.get("longName"),
+        "exchange": info.get("exchange"),
+        "sector": info.get("sector"),
+        "industry": info.get("industry"),
+        "market_cap": info.get("marketCap"),
+    }

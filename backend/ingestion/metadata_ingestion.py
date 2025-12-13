@@ -1,7 +1,6 @@
 import os
 import psycopg2
 from dotenv import load_dotenv
-
 from backend.services.market_data_service import get_company_metadata
 
 load_dotenv(".env.dev")
@@ -18,37 +17,47 @@ DB_CONFIG = {
 def run_metadata_ingestion():
     print("Starting company metadata ingestion...")
 
-    symbols = ["AAPL", "MSFT", "GOOGL", "IBM", "TSLA"]
+    tickers = [
+        "INFY.NS",
+        "TCS.NS",
+        "RELIANCE.NS",
+        "HDFCBANK.NS",
+        "ICICIBANK.NS",
+    ]
 
     conn = psycopg2.connect(**DB_CONFIG)
     cursor = conn.cursor()
 
-    for symbol in symbols:
-        data = get_company_metadata(symbol)
-        if not data:
-            continue
-
-        cursor.execute("""
-        INSERT INTO companies (
-            ticker, name, exchange, sector, industry, market_cap
-        )
+    insert_sql = """
+        INSERT INTO companies
+        (ticker, name, exchange, sector, industry, market_cap)
         VALUES (%s, %s, %s, %s, %s, %s)
         ON CONFLICT (ticker) DO NOTHING;
-        """, (
-            data.get("Symbol"),
-            data.get("Name"),
-            data.get("Exchange"),
-            data.get("Sector"),
-            data.get("Industry"),
-            data.get("MarketCapitalization")
-        ))
+    """
+
+    for ticker in tickers:
+        metadata = get_company_metadata(ticker)
+        if not metadata:
+            continue
+
+        cursor.execute(
+            insert_sql,
+            (
+                metadata["ticker"],
+                metadata["name"],
+                metadata["exchange"],
+                metadata["sector"],
+                metadata["industry"],
+                metadata["market_cap"],
+            ),
+        )
 
         conn.commit()
-        print(f"Inserted metadata for {symbol}")
+        print(f"Inserted metadata for {ticker}")
 
     cursor.close()
     conn.close()
-    print("Metadata ingestion completed!")
+    print("Metadata ingestion completed.")
 
 
 if __name__ == "__main__":

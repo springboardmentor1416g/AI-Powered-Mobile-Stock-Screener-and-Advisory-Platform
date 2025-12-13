@@ -7,7 +7,7 @@ LIMIT 10;
 -- Validate specific ticker
 SELECT *
 FROM price_history
-WHERE ticker = 'AAPL'
+WHERE ticker = 'INFY.NS'
 ORDER BY time DESC
 LIMIT 5;
 
