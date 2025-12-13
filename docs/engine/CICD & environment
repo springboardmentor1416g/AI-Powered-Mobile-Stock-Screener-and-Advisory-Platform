@@ -1,0 +1,49 @@
+DB_HOST_DEV, DB_USER_DEV, DB_PASS_DEV
+DB_HOST_STAGING, DB_USER_STAGING, DB_PASS_STAGING
+DB_HOST_PROD, DB_USER_PROD, DB_PASS_PROD
+JWT_SECRET
+API_KEYS_MARKETDATA
+DOCKER_REGISTRY_TOKEN
+name: Backend CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: timescale/timescaledb:latest-pg14
+        ports: ['5432:5432']
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: stock_screener
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: |
+          pip install -r backend/database/requirements.txt
+      - name: Run tests (if any)
+        run: |
+          echo "Add unit/integration tests here"
+
+  deploy-staging:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Terraform apply for staging (example)
+        run: |
+          cd infrastructure/terraform
+          terraform init
+          terraform workspace select staging || terraform workspace new staging
+          terraform apply -var-file=staging.tfvars -auto-approve
+      # Add migration and deploy steps using secrets (DB credentials in GitHub secrets)
