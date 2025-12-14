@@ -35,3 +35,26 @@ node_modules/
 dist/
 build/
 .env
+
+
+# Node
+node_modules/
+logs/
+
+# Data artifacts
+data/processed/
+*.csv
+
+# Environment files
+.env*
+backend/api-gateway/.env*
+
+# Node
+node_modules/
+logs/
+
+# Data artifacts
+data/processed/
+*.csv
+
+
