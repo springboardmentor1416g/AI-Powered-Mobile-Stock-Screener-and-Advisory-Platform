@@ -1,0 +1,19 @@
+# Node
+node_modules/
+
+# Environment
+.env
+
+# Data
+data/raw/
+data/processed/
+
+# Logs & reports
+backend/services/data_validation/logs/*
+!backend/services/data_validation/logs/.gitkeep
+backend/services/data_validation/reports/*
+!backend/services/data_validation/reports/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
