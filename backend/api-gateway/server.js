@@ -1,6 +1,10 @@
-import app from "./src/app.js";
-import config from "./src/config/env.js";
+import dotenv from 'dotenv';
+import app from './src/app.js';
 
-app.listen(config.port, () => {
-  console.log(`API Gateway running on port ${config.port}`);
+dotenv.config();
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`API Gateway running on port ${PORT}`);
 });
