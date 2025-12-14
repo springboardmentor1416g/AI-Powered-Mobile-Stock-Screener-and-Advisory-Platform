@@ -1,0 +1,11 @@
+psycopg2-binary
+pandas
+requests
+PyYAML
+python-dateutil
+tqdm
+numpy
+pendulum
+sqlalchemy
+python-dotenv
+retrying
