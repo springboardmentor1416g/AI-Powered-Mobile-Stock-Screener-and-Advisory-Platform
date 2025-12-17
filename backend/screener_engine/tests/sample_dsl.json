@@ -1,0 +1,8 @@
+{
+  "filter": {
+    "and": [
+      { "field": "pe_ratio", "operator": "<", "value": 15 },
+      { "field": "net_profit", "operator": ">", "value": 0 }
+    ]
+  }
+}
