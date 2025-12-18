@@ -33,3 +33,11 @@ Portfolio & Watchlist
 Community discussion
 
 Alerts & Push notifications
+
+
+
+
+## Stock Screener DSL
+- JSON-schema driven
+- Validated at compile time
+- Executed via Screener Runner
