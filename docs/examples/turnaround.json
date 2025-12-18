@@ -1,0 +1,26 @@
+{
+  "filter": {
+    "and": [
+      {
+        "field": "net_profit",
+        "operator": ">",
+        "value": 0,
+        "period": {
+          "type": "last_n_quarters",
+          "n": 2,
+          "aggregation": "any"
+        }
+      },
+      {
+        "not": {
+          "field": "total_debt",
+          "operator": ">",
+          "value": 1000000000
+        }
+      }
+    ]
+  },
+  "meta": {
+    "strategy": "turnaround"
+  }
+}

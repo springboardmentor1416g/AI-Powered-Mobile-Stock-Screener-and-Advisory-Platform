@@ -1,0 +1,29 @@
+{
+  "filter": {
+    "and": [
+      {
+        "field": "revenue_growth_yoy",
+        "operator": ">",
+        "value": 20
+      },
+      {
+        "field": "earnings_growth_yoy",
+        "operator": ">",
+        "value": 20
+      },
+      {
+        "field": "net_profit",
+        "operator": ">",
+        "value": 0,
+        "period": {
+          "type": "last_n_quarters",
+          "n": 4,
+          "aggregation": "all"
+        }
+      }
+    ]
+  },
+  "meta": {
+    "strategy": "growth"
+  }
+}
