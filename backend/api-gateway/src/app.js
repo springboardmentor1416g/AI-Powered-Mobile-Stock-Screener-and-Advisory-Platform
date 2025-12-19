@@ -7,6 +7,7 @@ const authRoutes = require('./auth/auth.routes');
 const healthRoutes = require('./routes/health.routes');
 const metadataRoutes = require('./routes/metadata.routes');
 const protectedRoutes = require('./routes/protected.routes');
+const screenerRoutes = require('./screener/screener.routes');
 
 const app = express();
 const ENV = process.env.ENV || 'dev';
@@ -17,14 +18,13 @@ app.use(express.json());
 app.use(morgan('dev'));
 app.use(requestLogger);
 
-/* ---------- Auth Routes ---------- */
+/* ---------- Routes ---------- */
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1', protectedRoutes);
 
-
-/* ---------- API v1 Routes ---------- */
 app.use('/api/v1/health', healthRoutes);
 app.use('/api/v1/metadata', metadataRoutes);
+app.use('/api/v1/screener', screenerRoutes);
 
 /* ---------- 404 Handler ---------- */
 app.use((req, res) => {
