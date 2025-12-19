@@ -8,6 +8,8 @@ const authRoutes = require("./routes/auth.routes");
 const errorHandler = require("./middleware/error.middleware");
 const profileRoutes = require("./routes/profile.routes");
 const watchlistRoutes = require("./routes/watchlist.routes");
+const screenerRoutes = require("./routes/screener.routes");
+
 
 
 
@@ -22,6 +24,8 @@ app.use("/api/v1/metadata", metadataRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1", profileRoutes);
 app.use("/api/v1/watchlist", watchlistRoutes);
+app.use("/api/v1/screener", screenerRoutes);
+
 
 
 
