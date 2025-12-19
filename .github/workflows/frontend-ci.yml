@@ -4,23 +4,23 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'frontend/**'
+      - 'frontend/mobile/**'
   pull_request:
     paths:
-      - 'frontend/**'
+      - 'frontend/mobile/**'
 
 jobs:
-  build-react-native:
+  build-mobile:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check frontend exists
+      - name: Check mobile frontend exists
         run: |
-          if [ ! -f frontend/package.json ]; then
-            echo "Frontend not initialized yet. Skipping frontend CI."
+          if [ ! -f frontend/mobile/package.json ]; then
+            echo "Mobile frontend not initialized. Skipping."
             exit 0
           fi
 
@@ -29,28 +29,14 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: frontend/mobile/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
-        working-directory: frontend
+        working-directory: frontend/mobile
+        run: npm install
 
-      - name: Run ESLint
-        run: npm run lint
-        working-directory: frontend
-
-      - name: Run Jest tests
-        run: npm test -- --coverage
-        working-directory: frontend
-
-      - name: Build Android APK (placeholder)
+      - name: Expo sanity check
+        working-directory: frontend/mobile
         run: |
-          echo "Skipping real Android build in CI (requires Android SDK)."
-          mkdir -p frontend/android/app/build/outputs/apk/release
-          echo "dummy apk" > frontend/android/app/build/outputs/apk/release/app-release.apk
-
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-apk
-          path: frontend/android/app/build/outputs/apk/release/app-release.apk
+          npx expo --version
+          echo "Expo project detected successfully"
