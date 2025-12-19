@@ -1,0 +1,9 @@
+import logging
+
+logging.basicConfig(
+    filename="logs/ingestion_run.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(message)s"
+)
+
+logging.info("Ingestion started")
