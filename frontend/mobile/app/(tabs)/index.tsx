@@ -74,6 +74,16 @@ export default function HomeScreen() {
           <ThemedText type="defaultSemiBold">app-example</ThemedText>.
         </ThemedText>
       </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+  <Link href="/screener">
+    <ThemedText type="subtitle">Go to Stock Screener</ThemedText>
+  </Link>
+
+  <ThemedText>
+    Run stock screening rules and view results.
+  </ThemedText>
+</ThemedView>
+
     </ParallaxScrollView>
   );
 }
