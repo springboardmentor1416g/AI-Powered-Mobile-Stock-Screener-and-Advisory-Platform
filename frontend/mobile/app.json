@@ -22,6 +22,7 @@
       },
       "edgeToEdgeEnabled": true
     },
+    "usesClearTextTraffic": true,
     "web": {
       "favicon": "./assets/favicon.png"
     }
