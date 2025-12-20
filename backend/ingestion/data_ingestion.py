@@ -19,7 +19,11 @@ DB_CONFIG = {
 }
 
 # List of stock tickers to ingest
-TICKERS = ["AAPL", "MSFT", "GOOGL", "IBM", "TSLA"]
+TICKERS = ["AAPL", "MSFT", "GOOGL", "IBM", "TSLA", 'TCS.NS', 'INFY.NS', 'WIPRO.NS', 'HCLTECH.NS', 'TECHM.NS',
+        'LTIM.NS', 'RELIANCE.NS', 'HDFCBANK.NS', 'ICICIBANK.NS',
+        'BHARTIARTL.NS', 'ITC.NS', 'KOTAKBANK.NS', 'LT.NS',
+        'AXISBANK.NS', 'SBIN.NS', 'BAJFINANCE.NS', 'ASIANPAINT.NS',
+        'MARUTI.NS', 'TITAN.NS', 'SUNPHARMA.NS']
 
 
 def get_db_connection():
@@ -143,3 +147,7 @@ def run_ingestion():
 
 if __name__ == "__main__":
     run_ingestion()
+
+
+# Command to run:
+# python -m backend.ingestion.data_ingestion

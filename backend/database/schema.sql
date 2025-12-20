@@ -122,7 +122,7 @@ LIMIT 5;
 
 SELECT *
 FROM price_history
-WHERE ticker = 'AAPL'
+WHERE ticker = 'INFY.NS'
 ORDER BY time DESC
 LIMIT 5;
 
@@ -134,3 +134,81 @@ SELECT ticker, name, exchange, sector, industry, market_cap
 FROM companies
 LIMIT 5;
 
+SELECT 'price_history', COUNT(*) FROM price_history;
+
+SELECT *
+FROM fundamentals_quarterly
+WHERE ticker = 'TCS.NS'
+ORDER BY quarter DESC
+LIMIT 5;
+
+SELECT ticker, COUNT(DISTINCT quarter) AS num_quarters
+FROM fundamentals_quarterly
+GROUP BY ticker
+ORDER BY num_quarters DESC;
+
+SELECT *
+FROM fundamentals_quarterly
+WHERE revenue IS NULL OR net_income IS NULL OR eps IS NULL;
+
+SELECT *
+FROM price_history
+WHERE ticker = 'TCS.NS'
+ORDER BY time DESC
+LIMIT 5;
+
+SELECT ticker, COUNT(*) AS total_rows, MIN(time) AS first_date, MAX(time) AS last_date
+FROM price_history
+GROUP BY ticker
+ORDER BY ticker;
+
+SELECT ticker, quarter, revenue, net_income, roe, roa FROM fundamentals_quarterly ORDER BY created_at DESC LIMIT 10;
+
+SELECT * FROM fundamentals_quarterly WHERE ticker='TCS.NS' ORDER BY quarter DESC LIMIT 5;
+
+SELECT 'Quarterly' AS type, ticker, COUNT(*) AS row_count
+FROM fundamentals_quarterly
+GROUP BY ticker
+ORDER BY ticker;
+
+SELECT 'Annual' AS type, ticker, COUNT(*) AS row_count
+FROM fundamentals_quarterly
+GROUP BY ticker
+ORDER BY ticker;
+
+SELECT ticker, quarter, revenue, net_income, eps
+FROM fundamentals_quarterly
+WHERE ticker='TCS.NS';
+
+SELECT ticker, quarter, revenue
+FROM fundamentals_quarterly
+WHERE quarter >= '2023-Q1'
+ORDER BY ticker, quarter DESC;
+
+-- 4️⃣ YoY Revenue Growth calculation
+SELECT f1.ticker, f1.quarter,
+       (f1.revenue - f2.revenue)::NUMERIC / NULLIF(f2.revenue,0)*100 AS yoy_growth
+FROM fundamentals_quarterly f1
+JOIN fundamentals_quarterly f2
+  ON f1.ticker = f2.ticker
+  AND f1.quarter = (f2.quarter || '-1 year')::text;
+
+-- Q-over-Q EPS Trend
+SELECT ticker, quarter, eps,
+       eps - LAG(eps) OVER (PARTITION BY ticker ORDER BY quarter) AS qoq_eps_change
+FROM fundamentals_quarterly
+WHERE ticker='TCS.NS';
+
+SELECT *
+FROM price_history
+WHERE ticker='TCS.NS'
+ORDER BY time DESC
+LIMIT 5;
+
+SELECT ticker, COUNT(*) AS total_rows,
+       COUNT(revenue) AS revenue_present,
+       COUNT(net_income) AS net_income_present,
+       COUNT(eps) AS eps_present
+FROM fundamentals_quarterly
+GROUP BY ticker
+ORDER BY ticker;
