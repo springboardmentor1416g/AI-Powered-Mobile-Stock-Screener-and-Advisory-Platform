@@ -1,21 +1,31 @@
-import { View, Text } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 
 export default function ResultsScreen() {
   return (
-    <View style={{ flex: 1, padding: 20, backgroundColor: "black" }}>
-      <Text style={{ fontSize: 22, fontWeight: "bold", color: "white" }}>
-        Screener Results
-      </Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Screener Results</Text>
 
-      <Text style={{ marginTop: 12, color: "white" }}>
-        AAPL
-      </Text>
-      <Text style={{ color: "white" }}>
-        MSFT
-      </Text>
-      <Text style={{ color: "white" }}>
-        GOOGL
-      </Text>
+      <Text style={styles.item}>AAPL</Text>
+      <Text style={styles.item}>MSFT</Text>
+      <Text style={styles.item}>GOOGL</Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+    padding: 20,
+  },
+  title: {
+    fontSize: 22,
+    marginBottom: 16,
+    color: "#000000",
+  },
+  item: {
+    fontSize: 18,
+    marginBottom: 8,
+    color: "#333333",
+  },
+});
