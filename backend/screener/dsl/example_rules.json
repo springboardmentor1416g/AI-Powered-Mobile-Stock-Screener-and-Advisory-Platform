@@ -1,0 +1,7 @@
+{
+  "name": "High Revenue Low Debt",
+  "conditions": [
+    { "field": "revenue", "operator": ">", "value": 100000000 },
+    { "field": "debt", "operator": "<", "value": 50000000 }
+  ]
+}
