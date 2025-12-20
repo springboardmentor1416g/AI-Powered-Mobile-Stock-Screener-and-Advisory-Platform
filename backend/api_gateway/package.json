@@ -1,0 +1,4 @@
+"scripts": {
+  "dev": "nodemon src/app.js",
+  "test": "jest"
+}
