@@ -57,6 +57,10 @@ class FundamentalsIngestionPipeline:
         self.processed_dir = self.storage_root / 'processed' / 'fundamentals' / datetime.now().strftime('%Y-%m-%d')
         self.processed_dir.mkdir(parents=True, exist_ok=True)
         
+        # Data processed directory for CSV files
+        self.data_processed_dir = Path(__file__).parent.parent.parent.parent / 'data' / 'processed' / 'fundamentals'
+        self.data_processed_dir.mkdir(parents=True, exist_ok=True)
+        
         logger.info(f"Initialized FundamentalsIngestionPipeline with provider: {provider}")
     
     def get_db_connection(self):
@@ -78,6 +82,41 @@ class FundamentalsIngestionPipeline:
             logger.debug(f"Saved processed data to {filepath}")
         except Exception as e:
             logger.error(f"Failed to save processed data: {e}")
+    
+    def save_normalized_csv(self, data: List[Dict], symbol: str, period: str):
+        """Save normalized data as CSV to data/processed/fundamentals/"""
+        try:
+            # Create period-specific directory
+            period_dir = self.data_processed_dir / period
+            period_dir.mkdir(exist_ok=True)
+            
+            # Convert to DataFrame
+            df = pd.DataFrame(data)
+            
+            # Select and order columns for CSV output
+            csv_columns = [
+                'ticker', 'date', 'quarter', 'revenue', 'gross_profit', 'ebitda', 
+                'operating_income', 'net_income', 'diluted_eps', 'total_debt', 
+                'cash_and_equivalents', 'free_cash_flow', 'debt_to_equity', 
+                'debt_to_fcf_ratio', 'pe_ratio', 'peg_ratio', 'pb_ratio', 'ps_ratio',
+                'promoter_holding', 'institutional_holding', 'price_target_high',
+                'price_target_low', 'price_target_avg', 'eps_estimate',
+                'buybacks', 'dividends', 'splits', 'roe', 'roa', 'operating_margin',
+                'ebitda_margin', 'current_ratio', 'total_assets', 'operating_cash_flow'
+            ]
+            
+            # Keep only columns that exist in the data
+            available_columns = [col for col in csv_columns if col in df.columns]
+            df_output = df[available_columns]
+            
+            # Save CSV
+            csv_filename = f"{symbol}_{period}_normalized.csv"
+            csv_path = period_dir / csv_filename
+            df_output.to_csv(csv_path, index=False)
+            logger.info(f"Saved normalized CSV: {csv_path}")
+            
+        except Exception as e:
+            logger.error(f"Failed to save normalized CSV for {symbol}: {e}")
     
     def safe_get(self, row, key: str) -> Optional[float]:
         """Safely get value from row, handling missing keys and NaN"""
@@ -242,6 +281,84 @@ class FundamentalsIngestionPipeline:
             logger.error(f"Error fetching cash flow for {symbol}: {e}")
             return []
     
+    def fetch_market_data(self, symbol: str) -> Dict:
+        """Fetch current market data and ratios"""
+        try:
+            ticker = yf.Ticker(symbol)
+            info = ticker.info
+            
+            return {
+                'pe_ratio': info.get('trailingPE') or info.get('forwardPE'),
+                'peg_ratio': info.get('pegRatio'),
+                'pb_ratio': info.get('priceToBook'),
+                'ps_ratio': info.get('priceToSalesTrailing12Months'),
+                'price_target_high': info.get('targetHighPrice'),
+                'price_target_low': info.get('targetLowPrice'),
+                'price_target_avg': info.get('targetMeanPrice'),
+            }
+        except Exception as e:
+            logger.warning(f"Error fetching market data for {symbol}: {e}")
+            return {}
+    
+    def fetch_shareholding_data(self, symbol: str) -> Dict:
+        """Fetch shareholding information"""
+        try:
+            ticker = yf.Ticker(symbol)
+            
+            # Get institutional holders
+            institutional = ticker.institutional_holders
+            institutional_pct = 0
+            if institutional is not None and not institutional.empty:
+                institutional_pct = institutional['% Out'].sum() if '% Out' in institutional.columns else 0
+            
+            # Get major holders (includes insider/promoter data)
+            major_holders = ticker.major_holders
+            promoter_pct = 0
+            if major_holders is not None and not major_holders.empty:
+                # First row typically shows insider percentage
+                if len(major_holders) > 0:
+                    promoter_pct = major_holders.iloc[0, 0] if isinstance(major_holders.iloc[0, 0], (int, float)) else 0
+            
+            return {
+                'promoter_holding': promoter_pct,
+                'institutional_holding': institutional_pct,
+            }
+        except Exception as e:
+            logger.warning(f"Error fetching shareholding data for {symbol}: {e}")
+            return {}
+    
+    def fetch_estimates_and_actions(self, symbol: str) -> Dict:
+        """Fetch analyst estimates, buybacks, dividends, splits"""
+        try:
+            ticker = yf.Ticker(symbol)
+            info = ticker.info
+            
+            # Get earnings estimates
+            earnings_estimate = ticker.earnings_estimate
+            eps_estimate = None
+            if earnings_estimate is not None and not earnings_estimate.empty:
+                current_quarter = earnings_estimate.columns[0] if len(earnings_estimate.columns) > 0 else None
+                if current_quarter:
+                    eps_estimate = earnings_estimate.loc['Avg. Estimate', current_quarter] if 'Avg. Estimate' in earnings_estimate.index else None
+            
+            # Get dividends
+            dividends = ticker.dividends
+            latest_dividend = dividends.iloc[-1] if dividends is not None and not dividends.empty else None
+            
+            # Get splits
+            splits = ticker.splits
+            latest_split = splits.iloc[-1] if splits is not None and not splits.empty else None
+            
+            return {
+                'eps_estimate': eps_estimate,
+                'latest_dividend': latest_dividend,
+                'latest_split': latest_split,
+                'buybacks': info.get('sharesOutstanding'),  # Share buyback info not directly available
+            }
+        except Exception as e:
+            logger.warning(f"Error fetching estimates/actions for {symbol}: {e}")
+            return {}
+    
     def fetch_all_fundamentals(self, symbol: str) -> Dict:
         """
         Fetch all fundamental data for a symbol
@@ -256,17 +373,68 @@ class FundamentalsIngestionPipeline:
             'balance_annual': self.fetch_balance_sheet(symbol, 'annual'),
             'cashflow_quarterly': self.fetch_cash_flow(symbol, 'quarterly'),
             'cashflow_annual': self.fetch_cash_flow(symbol, 'annual'),
+            'market_data': self.fetch_market_data(symbol),
+            'shareholding': self.fetch_shareholding_data(symbol),
+            'estimates': self.fetch_estimates_and_actions(symbol),
         }
     
-    def merge_financial_data(self, income: List[Dict], balance: List[Dict], cashflow: List[Dict]) -> List[Dict]:
+    def merge_financial_data(self, income: List[Dict], balance: List[Dict], cashflow: List[Dict], 
+                            market_data: Dict, shareholding: Dict, estimates: Dict) -> List[Dict]:
         """
-        Merge income, balance sheet, and cash flow data by date
+        Merge income, balance sheet, cash flow, and market data by date
         
         Returns:
             List of merged financial records
         """
         # Create lookup dictionaries
         balance_lookup = {(r['ticker'], r['date']): r for r in balance}
+        cashflow_lookup = {(r['ticker'], r['date']): r for r in cashflow}
+        
+        merged = []
+        for inc in income:
+            key = (inc['ticker'], inc['date'])
+            bal = balance_lookup.get(key, {})
+            cf = cashflow_lookup.get(key, {})
+            
+            # Merge all data
+            record = {
+                **inc,
+                'total_assets': bal.get('total_assets'),
+                'total_liabilities': bal.get('total_liabilities'),
+                'total_equity': bal.get('total_equity'),
+                'total_debt': bal.get('total_debt'),
+                'cash_and_equivalents': bal.get('cash_and_equivalents'),
+                'current_assets': bal.get('current_assets'),
+                'current_liabilities': bal.get('current_liabilities'),
+                'operating_cash_flow': cf.get('operating_cash_flow'),
+                'investing_cash_flow': cf.get('investing_cash_flow'),
+                'financing_cash_flow': cf.get('financing_cash_flow'),
+                'free_cash_flow': cf.get('free_cash_flow'),
+                'capex': cf.get('capex'),
+                # Add market data
+                'pe_ratio': market_data.get('pe_ratio'),
+                'peg_ratio': market_data.get('peg_ratio'),
+                'pb_ratio': market_data.get('pb_ratio'),
+                'ps_ratio': market_data.get('ps_ratio'),
+                'price_target_high': market_data.get('price_target_high'),
+                'price_target_low': market_data.get('price_target_low'),
+                'price_target_avg': market_data.get('price_target_avg'),
+                # Add shareholding
+                'promoter_holding': shareholding.get('promoter_holding'),
+                'institutional_holding': shareholding.get('institutional_holding'),
+                # Add estimates
+                'eps_estimate': estimates.get('eps_estimate'),
+                'dividends': estimates.get('latest_dividend'),
+                'splits': estimates.get('latest_split'),
+                'buybacks': estimates.get('buybacks'),
+            }
+            
+            # Calculate derived metrics
+            record = self.calculate_derived_metrics(record)
+            
+            merged.append(record)
+        
+        return merged
         cashflow_lookup = {(r['ticker'], r['date']): r for r in cashflow}
         
         merged = []
@@ -515,14 +683,23 @@ class FundamentalsIngestionPipeline:
                     logger.warning(f"No {period} data for {symbol}")
                     continue
                 
-                # Merge financial statements
-                merged_data = self.merge_financial_data(income, balance, cashflow)
+                # Get additional data
+                market_data = data.get('market_data', {})
+                shareholding = data.get('shareholding', {})
+                estimates = data.get('estimates', {})
                 
-                # Save processed data
+                # Merge financial statements
+                merged_data = self.merge_financial_data(income, balance, cashflow, 
+                                                       market_data, shareholding, estimates)
+                
+                # Save processed JSON data
                 self.save_processed_data(
                     {'symbol': symbol, 'period': period, 'data': merged_data},
                     f'{period}_{symbol}.json'
                 )
+                
+                # Save normalized CSV
+                self.save_normalized_csv(merged_data, symbol, period)
                 
                 # Prepare for database insertion with preprocessing
                 for record in merged_data:
@@ -540,12 +717,12 @@ class FundamentalsIngestionPipeline:
                         record.get('quarter'),
                         self.safe_int(record.get('revenue')),
                         self.safe_int(record.get('net_income')),
-                        self.safe_float(record.get('diluted_eps')),
+                        self.safe_float(record.get('diluted_eps') or record.get('eps_estimate')),
                         self.safe_float(record.get('operating_margin')),
                         self.safe_float(record.get('roe')),
                         self.safe_float(record.get('roa')),
-                        None,  # pe_ratio
-                        None,  # pb_ratio
+                        self.safe_float(record.get('pe_ratio')),
+                        self.safe_float(record.get('pb_ratio')),
                         self.safe_float(record.get('debt_to_equity')),
                         self.safe_float(record.get('current_ratio')),
                         self.safe_int(record.get('total_assets')),
