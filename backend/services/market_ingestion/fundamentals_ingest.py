@@ -796,16 +796,52 @@ class FundamentalsIngestionPipeline:
 def main():
     """Main entry point"""
     
-    # NSE stocks for fundamentals ingestion
-    NSE_SYMBOLS = [
-        'TCS.NS', 'INFY.NS', 'HDFCBANK.NS', 'ICICIBANK.NS', 'RELIANCE.NS'
-    ]
+    # NSE IT & Services
+    NSE_IT = ['TCS.NS', 'INFY.NS', 'WIPRO.NS', 'HCLTECH.NS', 'TECHM.NS', 'LTIM.NS', 'PERSISTENT.NS', 'COFORGE.NS']
+    
+    # NSE Banking
+    NSE_BANKING = ['HDFCBANK.NS', 'ICICIBANK.NS', 'KOTAKBANK.NS', 'AXISBANK.NS', 'SBIN.NS', 'INDUSINDBK.NS', 'FEDERALBNK.NS']
+    
+    # NSE Finance & NBFCs
+    NSE_FINANCE = ['BAJFINANCE.NS', 'BAJAJFINSV.NS', 'HDFCLIFE.NS', 'SBILIFE.NS', 'ICICIPRULI.NS', 'HDFCAMC.NS', 'CHOLAFIN.NS']
+    
+    # NSE Energy
+    NSE_ENERGY = ['RELIANCE.NS', 'ONGC.NS', 'IOC.NS', 'BPCL.NS', 'NTPC.NS', 'POWERGRID.NS', 'COALINDIA.NS']
+    
+    # NSE Auto
+    NSE_AUTO = ['MARUTI.NS', 'M&M.NS', 'TATAMOTORS.NS', 'BAJAJ-AUTO.NS', 'HEROMOTOCO.NS', 'EICHERMOT.NS']
+    
+    # NSE Pharma
+    NSE_PHARMA = ['SUNPHARMA.NS', 'DRREDDY.NS', 'CIPLA.NS', 'DIVISLAB.NS', 'AUROPHARMA.NS', 'BIOCON.NS']
+    
+    # NSE FMCG
+    NSE_FMCG = ['ITC.NS', 'HINDUNILVR.NS', 'NESTLEIND.NS', 'BRITANNIA.NS', 'DABUR.NS', 'GODREJCP.NS', 'MARICO.NS']
+    
+    # NSE Telecom
+    NSE_TELECOM = ['BHARTIARTL.NS', 'ZEEL.NS', 'SUNTV.NS']
+    
+    # NSE Cement & Construction
+    NSE_CEMENT = ['ULTRACEMCO.NS', 'GRASIM.NS', 'SHREECEM.NS', 'AMBUJACEM.NS', 'ACC.NS', 'LT.NS']
+    
+    # NSE Metals
+    NSE_METALS = ['TATASTEEL.NS', 'HINDALCO.NS', 'JSWSTEEL.NS', 'VEDL.NS', 'HINDZINC.NS']
+    
+    # NSE Retail & Lifestyle
+    NSE_RETAIL = ['TITAN.NS', 'DMART.NS', 'TRENT.NS', 'ABFRL.NS']
+    
+    # NSE Paints
+    NSE_PAINTS = ['ASIANPAINT.NS', 'BERGER.NS', 'PIDILITIND.NS']
+    
+    # Combine all NSE symbols
+    ALL_SYMBOLS = (NSE_IT + NSE_BANKING + NSE_FINANCE + NSE_ENERGY + NSE_AUTO + 
+                   NSE_PHARMA + NSE_FMCG + NSE_TELECOM + NSE_CEMENT + NSE_METALS + 
+                   NSE_RETAIL + NSE_PAINTS)
     
     # Initialize pipeline
     pipeline = FundamentalsIngestionPipeline(provider='yahoo')
     
     # Run full ingestion
-    pipeline.run_full_ingestion(symbols=NSE_SYMBOLS)
+    pipeline.run_full_ingestion(symbols=ALL_SYMBOLS)
 
 
 if __name__ == "__main__":
