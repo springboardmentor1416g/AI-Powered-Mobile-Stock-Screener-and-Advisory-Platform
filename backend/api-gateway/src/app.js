@@ -1,41 +1,34 @@
-import express from "express";
-import morgan from "morgan";
-import dotenv from "dotenv";
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
 
-dotenv.config({
-  path: `.env.${process.env.ENVIRONMENT || "dev"}`
-});
+const healthRoutes = require("./routes/health.routes");
+const metadataRoutes = require("./routes/metadata.routes");
+const authRoutes = require("./routes/auth.routes");
+const errorHandler = require("./middleware/error.middleware");
+const profileRoutes = require("./routes/profile.routes");
+const watchlistRoutes = require("./routes/watchlist.routes");
+const screenerRoutes = require("./routes/screener.routes");
 
-// Import Routes
-import authRoutes from "./routes/auth.js";
-import watchlistRoutes from "./routes/watchlist.js";
+
+
 
 const app = express();
 
-// Middleware
+app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
-// ----------- Health Check Route -----------
-app.get("/api/v1/health", (req, res) => {
-  res.json({
-    status: "OK",
-    environment: process.env.ENVIRONMENT,
-    timestamp: new Date().toISOString()
-  });
-});
-
-// ----------- Main API Routes -----------
+app.use("/api/v1/health", healthRoutes);
+app.use("/api/v1/metadata", metadataRoutes);
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1", profileRoutes);
 app.use("/api/v1/watchlist", watchlistRoutes);
+app.use("/api/v1/screener", screenerRoutes);
 
-// ----------- Global Error Handler -----------
-app.use((err, req, res, next) => {
-  console.error("Global Error:", err);
-  res.status(500).json({
-    status: "error",
-    message: err.message || "Internal Server Error"
-  });
-});
 
-export default app;
+
+
+app.use(errorHandler);
+
+module.exports = app;

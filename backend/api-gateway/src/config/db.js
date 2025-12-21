@@ -1,7 +1,11 @@
-import pg from "pg";
+const { Pool } = require("pg");
 
-const { Pool } = pg;
-
-export const db = new Pool({
-  connectionString: process.env.DB_URL
+const pool = new Pool({
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "postgres",
+  password: process.env.DB_PASSWORD || "123456789",
+  database: process.env.DB_NAME || "stock_screener",
+  port: 5432,
 });
+
+module.exports = pool;

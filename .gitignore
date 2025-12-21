@@ -1,26 +1,19 @@
-# Byte-compiled / optimized
+# Node.js
+node_modules/
+npm-debug.log
+
+# Environment files
+.env
+.env.*
+
+# Logs
+logs/
+*.log
+
+# Python
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
 
-# Virtualenv
-venv/
-.env
-.env.local
-
-# Data and logs (keep placeholders only)
-storage/
-data/processed/
-logs/*.log
-
-# OS
+# OS files
 .DS_Store
 Thumbs.db
-
-# IDEs
-.vscode/
-.idea/
-
-# Docker
-docker-compose.override.yml

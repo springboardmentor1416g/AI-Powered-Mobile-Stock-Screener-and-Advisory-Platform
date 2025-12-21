@@ -1,5 +1,6 @@
--- Core company metadata
-CREATE TABLE IF NOT EXISTS companies (
+CREATE EXTENSION IF NOT EXISTS timescaledb;
+
+CREATE TABLE companies (
     company_id SERIAL PRIMARY KEY,
     ticker VARCHAR(10) UNIQUE NOT NULL,
     name TEXT,
@@ -10,8 +11,7 @@ CREATE TABLE IF NOT EXISTS companies (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Time-series price data
-CREATE TABLE IF NOT EXISTS price_history (
+CREATE TABLE price_history (
     time TIMESTAMP NOT NULL,
     ticker VARCHAR(10) NOT NULL,
     open NUMERIC,
@@ -21,11 +21,9 @@ CREATE TABLE IF NOT EXISTS price_history (
     volume BIGINT,
     PRIMARY KEY (time, ticker)
 );
+SELECT create_hypertable('price_history','time');
 
-SELECT create_hypertable('price_history', 'time', if_not_exists => TRUE);
-
--- Quarterly fundamentals
-CREATE TABLE IF NOT EXISTS fundamentals_quarterly (
+CREATE TABLE fundamentals_quarterly (
     id SERIAL PRIMARY KEY,
     ticker VARCHAR(10),
     quarter VARCHAR(10),
@@ -40,8 +38,7 @@ CREATE TABLE IF NOT EXISTS fundamentals_quarterly (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Analyst estimates
-CREATE TABLE IF NOT EXISTS analyst_estimates (
+CREATE TABLE analyst_estimates (
     id SERIAL PRIMARY KEY,
     ticker VARCHAR(10),
     estimate_date DATE,
@@ -52,8 +49,7 @@ CREATE TABLE IF NOT EXISTS analyst_estimates (
     price_target_high NUMERIC
 );
 
--- Buybacks
-CREATE TABLE IF NOT EXISTS buybacks (
+CREATE TABLE buybacks (
     id SERIAL PRIMARY KEY,
     ticker VARCHAR(10),
     announcement_date DATE,
@@ -61,8 +57,7 @@ CREATE TABLE IF NOT EXISTS buybacks (
     remarks TEXT
 );
 
--- Cashflow statements
-CREATE TABLE IF NOT EXISTS cashflow_statements (
+CREATE TABLE cashflow_statements (
     id SERIAL PRIMARY KEY,
     ticker VARCHAR(10),
     period VARCHAR(10),
@@ -72,12 +67,20 @@ CREATE TABLE IF NOT EXISTS cashflow_statements (
     capex BIGINT
 );
 
--- Debt profile
-CREATE TABLE IF NOT EXISTS debt_profile (
+CREATE TABLE debt_profile (
     id SERIAL PRIMARY KEY,
     ticker VARCHAR(10),
     quarter VARCHAR(10),
     short_term_debt BIGINT,
     long_term_debt BIGINT,
     debt_to_equity NUMERIC
+);
+-- USERS TABLE (AUTH MODULE)
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    last_login TIMESTAMP
 );

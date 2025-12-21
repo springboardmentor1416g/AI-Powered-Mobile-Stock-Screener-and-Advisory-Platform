@@ -1,18 +1,30 @@
 # Kickoff Review Notes
 
-## Confirmed Decisions
-- Market: NSE (Week 1)
-- Database: PostgreSQL
-- Data Freshness: End-of-Day (EOD)
-- NLP Strategy: Template-based mapping to DSL
-- Screener Scope: Fundamentals, Technicals, Analyst Estimates, Corporate Actions, Earnings
+## Scope
+- Initial exchange: NSE only
+- Screener covers:
+  - Fundamentals
+  - Technical indicators
+  - Analyst outlook
+  - Corporate actions
+  - Earnings events
+  - Sentiment (future)
 
-## Action Items
-- Implement ingestion pipelines for Market API, Fundamentals API, and Corporate Actions API
-- Populate `field_catalog.xlsx` and run initial database migrations
-- Build DSL → SQL translation layer
-- Add unit tests for the screening rule engine
+## Data Freshness
+- Price: real-time or 15 min delayed
+- Fundamentals: end of day
+- Analyst estimates: daily
+- Corporate actions: daily
+- Earnings calendar: daily
 
-## Approvals
-- Product Owner: [Name]
-- Data Provider: [Provider]
+## NLP Query Support
+Examples:
+- "PEG < 2 and low debt stocks"
+- "Companies with buyback announced"
+- "Stocks with earnings next 30 days"
+
+## Deliverables Completed
+- Field catalog
+- ERD draft
+- Data source mapping
+- Rule engine spec

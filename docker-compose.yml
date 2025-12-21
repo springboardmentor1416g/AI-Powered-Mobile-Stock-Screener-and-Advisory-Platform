@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   db:
@@ -16,6 +16,15 @@ services:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       retries: 5
+
+  sample_loader:
+    image: python:3.11-slim
+    depends_on:
+      - db
+    working_dir: /workspace
+    volumes:
+      - ./backend/database:/workspace
+    command: ["/bin/bash", "-c", "pip install psycopg2-binary && python sample_loader.py"]
 
 volumes:
   db_data:

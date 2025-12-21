@@ -1,12 +1,19 @@
+-- Database setup script for dev, staging, and prod environments
+
+-- Run these as a superuser on your PostgreSQL server
+
+-- Development database
 CREATE DATABASE stock_screener_dev;
+
+-- Staging database
 CREATE DATABASE stock_screener_staging;
+
+-- Production database
 CREATE DATABASE stock_screener_prod;
 
--- Example roles
-CREATE ROLE dev_user LOGIN PASSWORD 'dev_pass';
-CREATE ROLE staging_user LOGIN PASSWORD 'staging_pass';
-CREATE ROLE prod_user LOGIN PASSWORD 'prod_pass';
+-- Example: create a common user (adjust password in real setup)
+CREATE USER stock_user WITH PASSWORD 'changeme';
 
-GRANT ALL PRIVILEGES ON DATABASE stock_screener_dev TO dev_user;
-GRANT ALL PRIVILEGES ON DATABASE stock_screener_staging TO staging_user;
-GRANT ALL PRIVILEGES ON DATABASE stock_screener_prod TO prod_user;
+GRANT ALL PRIVILEGES ON DATABASE stock_screener_dev TO stock_user;
+GRANT ALL PRIVILEGES ON DATABASE stock_screener_staging TO stock_user;
+GRANT ALL PRIVILEGES ON DATABASE stock_screener_prod TO stock_user;
