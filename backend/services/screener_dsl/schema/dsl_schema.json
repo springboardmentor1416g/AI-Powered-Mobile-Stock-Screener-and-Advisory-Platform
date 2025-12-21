@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["filter"],
+  "properties": {
+    "filter": {
+      "$ref": "#/definitions/logicalNode"
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "sector": { "type": "string" },
+        "exchange": { "type": "string" }
+      }
+    }
+  },
+
+  "definitions": {
+    "logicalNode": {
+      "type": "object",
+      "oneOf": [
+        { "required": ["and"] },
+        { "required": ["or"] },
+        { "required": ["not"] },
+        { "required": ["field", "operator", "value"] }
+      ],
+      "properties": {
+        "and": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/logicalNode" }
+        },
+        "or": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/logicalNode" }
+        },
+        "not": {
+          "$ref": "#/definitions/logicalNode"
+        },
+
+        "field": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string",
+          "enum": ["<", ">", "<=", ">=", "=", "!=", "between", "in", "exists"]
+        },
+        "value": {}
+      }
+    }
+  }
+}
