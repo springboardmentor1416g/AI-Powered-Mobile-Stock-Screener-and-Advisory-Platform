@@ -9,6 +9,7 @@ const metadataRoutes = require('./routes/metadata.routes');
 const protectedRoutes = require('./routes/protected.routes');
 const screenerRoutes = require('./screener/screener.routes');
 const llmRoutes = require('./routes/llm.routes');
+const llmParserRoutes = require('./services/llm_parser/llm_parser.routes');
 
 const app = express();
 const ENV = process.env.ENV || 'dev';
@@ -26,6 +27,7 @@ app.use('/api/v1/health', healthRoutes);
 app.use('/api/v1/metadata', metadataRoutes);
 app.use('/api/v1/screener', screenerRoutes);
 app.use('/api/v1/llm', llmRoutes);
+app.use('/api/v1/screener', llmParserRoutes);
 
 /* ---------- 404 Handler ---------- */
 app.use((req, res) => {
