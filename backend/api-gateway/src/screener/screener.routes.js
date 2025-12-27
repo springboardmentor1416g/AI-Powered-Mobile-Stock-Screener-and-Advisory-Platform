@@ -20,7 +20,7 @@ router.post('/run', async (req, res) => {
     success: true,
     results: [
       {
-        symbol: 'ABC',
+        symbol: 'TCS',
         name: 'Tata Consultancy Services',
         pe_ratio: 18.2
       },

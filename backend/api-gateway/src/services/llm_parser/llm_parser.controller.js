@@ -1,28 +1,21 @@
 const llmParserService = require('./llm_parser.service');
 
-exports.handleNLQuery = async (req, res) => {
+exports.translateNLToDSL = async (req, res, next) => {
   try {
     const { query } = req.body;
-
-    if (!query || typeof query !== 'string') {
-      return res.status(400).json({
-        success: false,
-        message: 'Natural language query is required'
-      });
-    }
-
-    const results = await llmParserService.processNLQuery(query);
-
-    return res.json({
-      success: true,
-      results
-    });
+    const dsl = await llmParserService.translate(query);
+    res.json({ success: true, dsl });
   } catch (err) {
-    console.error('LLM Parser Error:', err.message);
+    next(err);
+  }
+};
 
-    return res.status(422).json({
-      success: false,
-      message: err.message
-    });
+exports.runNLQuery = async (req, res, next) => {
+  try {
+    const { query } = req.body;
+    const results = await llmParserService.run(query);
+    res.json({ success: true, results });
+  } catch (err) {
+    next(err);
   }
 };

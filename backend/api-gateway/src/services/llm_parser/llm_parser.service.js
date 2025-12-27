@@ -1,25 +1,33 @@
 const llmStub = require('../llm_stub');
 const validateDSL = require('./llm_parser.validator');
+const screenerAdapter = require('../screener.adapter');
 
-const compileDSL = require('../../../../screener_engine/compiler/screener_compiler');
-const screenerRunner = require('../../../../screener_engine/runner/screener_runner');
+/**
+ * Translate Natural Language → DSL only
+ */
+exports.translate = async (nlQuery) => {
+  if (!nlQuery || nlQuery.trim() === '') {
+    throw new Error('Natural language query is required');
+  }
 
-exports.processNLQuery = async (nlQuery) => {
-  // 1. Call LLM Stub
   const dsl = llmStub.translate(nlQuery);
 
   if (!dsl) {
     throw new Error('LLM could not translate query');
   }
 
-  // 2. Validate DSL
   validateDSL(dsl);
+  return dsl;
+};
 
-  // 3. Compile DSL → SQL
-  const compiledQuery = compileDSL(dsl);
+/**
+ * Full NL → DSL → Screener execution (via adapter)
+ */
+exports.run = async (nlQuery) => {
+  const dsl = await exports.translate(nlQuery);
 
-  // 4. Execute query
-  const results = await screenerRunner.run(compiledQuery);
+  // Execution happens via adapter (mocked for now)
+  const results = await screenerAdapter.run(dsl);
 
   return results;
 };

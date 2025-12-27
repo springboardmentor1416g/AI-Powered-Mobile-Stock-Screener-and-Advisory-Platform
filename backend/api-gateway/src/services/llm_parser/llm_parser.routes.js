@@ -1,8 +1,12 @@
 const express = require('express');
 const router = express.Router();
 
-const controller = require('./llm_parser.controller');
+const {
+  translateNLToDSL,
+  runNLQuery
+} = require('./llm_parser.controller');
 
-router.post('/nl', controller.handleNLQuery);
+router.post('/translate', translateNLToDSL);
+router.post('/run', runNLQuery); 
 
 module.exports = router;
