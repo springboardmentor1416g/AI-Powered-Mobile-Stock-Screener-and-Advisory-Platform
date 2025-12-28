@@ -116,26 +116,7 @@ Coverage:    83.78% Stmts | 60.6% Branch | 68.42% Funcs | 84.15% Lines
      Container started
      Health check: ✓ PASSED
      Container stopped
-
-⊘  Deploy-Dev (skipped - not on develop branch)
 ```
-
-### How to Trigger CI/CD:
-```bash
-# 1. Initialize git (if not done)
-git init
-git add .
-git commit -m "feat: API Gateway implementation"
-
-# 2. Push to GitHub
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
-git push -u origin main
-
-# 3. View results
-# Go to: GitHub → Repository → Actions tab
-```
-
----
 
 ## 🎯 Summary
 

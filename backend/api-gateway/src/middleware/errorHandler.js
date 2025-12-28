@@ -1,8 +1,5 @@
 const logger = require('../config/logger');
 
-/**
- * Custom API Error class
- */
 class ApiError extends Error {
   constructor(statusCode, message, errorCode = null) {
     super(message);
@@ -59,11 +56,37 @@ const notFoundHandler = (req, res, next) => {
   next(error);
 };
 
-/**
- * Async handler wrapper to catch errors in async route handlers
- */
 const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+const { validationResult } = require('express-validator');
+
+const validateRequest = (req, res, next) => {
+  const errors = validationResult(req);
+  
+  if (!errors.isEmpty()) {
+    const errorMessages = errors.array().map(err => ({
+      field: err.path,
+      message: err.msg,
+    }));
+    
+    logger.warn('Validation failed', {
+      traceId: req.traceId,
+      errors: errorMessages,
+      body: req.body,
+    });
+    
+    return res.status(400).json({
+      success: false,
+      message: 'Validation failed',
+      error_code: 'VALIDATION_ERROR',
+      errors: errorMessages,
+      trace_id: req.traceId,
+    });
+  }
+  
+  next();
 };
 
 module.exports = {
@@ -71,4 +94,5 @@ module.exports = {
   errorHandler,
   notFoundHandler,
   asyncHandler,
+  validateRequest,
 };
