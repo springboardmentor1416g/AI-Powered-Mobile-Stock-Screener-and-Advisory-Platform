@@ -5,20 +5,34 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 
-type ScreenerRow = {
+// Matches the backend response structure
+type StockResult = {
   ticker: string;
-  "Total Revenue": number;
+  name: string;
+  sector: string;
+  industry?: string;
+  revenue: string | number; 
+  net_income?: string | number;
+  pe_ratio?: string | number;
+  market_cap?: string | number;
 };
 
 // Helper to make numbers readable (e.g. 1.2B)
-const formatCurrency = (value: number) => {
-  if (value >= 1e9) {
-    return `$${(value / 1e9).toFixed(2)}B`;
+const formatCurrency = (value: string | number) => {
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+  
+  if (!num || isNaN(num)) return "N/A";
+
+  if (num >= 1e12) {
+    return `$${(num / 1e12).toFixed(2)}T`;
   }
-  if (value >= 1e6) {
-    return `$${(value / 1e6).toFixed(2)}M`;
+  if (num >= 1e9) {
+    return `$${(num / 1e9).toFixed(2)}B`;
   }
-  return `$${value.toLocaleString()}`;
+  if (num >= 1e6) {
+    return `$${(num / 1e6).toFixed(2)}M`;
+  }
+  return `$${num.toLocaleString()}`;
 };
 
 export default function ResultsScreen() {
@@ -26,28 +40,54 @@ export default function ResultsScreen() {
   const { results } = useLocalSearchParams<{ results?: string }>();
   
   // Parse data safely
-  const data: ScreenerRow[] = results ? JSON.parse(results) : [];
+  let data: StockResult[] = [];
+  try {
+    data = results ? JSON.parse(results) : [];
+  } catch (e) {
+    console.error("Failed to parse results:", e);
+  }
 
-  const renderItem = ({ item, index }: { item: ScreenerRow; index: number }) => (
+  const renderItem = ({ item }: { item: StockResult }) => (
     <View style={styles.card}>
-      {/* Left Side: Ticker Icon & Name */}
-      <View style={styles.tickerContainer}>
-        <LinearGradient
-          colors={["#3b82f6", "#1d4ed8"]}
-          style={styles.logoPlaceholder}
-        >
-          <Text style={styles.logoText}>{item.ticker.charAt(0)}</Text>
-        </LinearGradient>
-        <View>
-          <Text style={styles.tickerText}>{item.ticker}</Text>
-          <Text style={styles.companyName}>Stock Equity</Text>
+      {/* Header Row: Icon + Ticker + Name */}
+      <View style={styles.cardHeader}>
+        <View style={styles.headerLeft}>
+          <LinearGradient
+            colors={["#3b82f6", "#1d4ed8"]}
+            style={styles.logoPlaceholder}
+          >
+            <Text style={styles.logoText}>{item.ticker.charAt(0)}</Text>
+          </LinearGradient>
+          <View>
+            <Text style={styles.tickerText}>{item.ticker}</Text>
+            <Text style={styles.companyName} numberOfLines={1}>{item.name}</Text>
+          </View>
+        </View>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{item.sector}</Text>
         </View>
       </View>
 
-      {/* Right Side: Revenue Data */}
-      <View style={styles.dataContainer}>
-        <Text style={styles.dataLabel}>Revenue</Text>
-        <Text style={styles.dataValue}>{formatCurrency(item["Total Revenue"])}</Text>
+      <View style={styles.divider} />
+
+      {/* Stats Row */}
+      <View style={styles.statsRow}>
+        <View style={styles.statItem}>
+          <Text style={styles.statLabel}>Revenue</Text>
+          <Text style={styles.statValue}>{formatCurrency(item.revenue)}</Text>
+        </View>
+        
+        <View style={[styles.statItem, { alignItems: 'center' }]}>
+           <Text style={styles.statLabel}>P/E Ratio</Text>
+           <Text style={styles.statValue}>{item.pe_ratio ? Number(item.pe_ratio).toFixed(2) : '-'}</Text>
+        </View>
+
+        <View style={[styles.statItem, { alignItems: 'flex-end' }]}>
+           <Text style={styles.statLabel}>Net Income</Text>
+           <Text style={[styles.statValue, { color: '#38bdf8' }]}>
+             {formatCurrency(item.net_income || 0)}
+           </Text>
+        </View>
       </View>
     </View>
   );
@@ -74,7 +114,7 @@ export default function ResultsScreen() {
 
           <FlatList
             data={data}
-            keyExtractor={(item, index) => item.ticker + index}
+            keyExtractor={(item) => item.ticker}
             renderItem={renderItem}
             contentContainerStyle={{ paddingBottom: 40 }}
             showsVerticalScrollIndicator={false}
@@ -124,13 +164,20 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.05)",
   },
-  tickerContainer: { flexDirection: "row", alignItems: "center", gap: 12 },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    flex: 1,
+  },
   logoPlaceholder: {
     width: 44,
     height: 44,
@@ -140,11 +187,31 @@ const styles = StyleSheet.create({
   },
   logoText: { color: "white", fontSize: 20, fontWeight: "bold" },
   tickerText: { color: "white", fontSize: 18, fontWeight: "bold" },
-  companyName: { color: "#64748b", fontSize: 12 },
+  companyName: { color: "#64748b", fontSize: 12, maxWidth: 180 },
+  
+  badge: {
+    backgroundColor: "rgba(255,255,255,0.08)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  badgeText: { color: "#cbd5e1", fontSize: 10, fontWeight: "600" },
 
-  dataContainer: { alignItems: "flex-end" },
-  dataLabel: { color: "#64748b", fontSize: 11, marginBottom: 2 },
-  dataValue: { color: "#10b981", fontSize: 16, fontWeight: "700" }, // Green for money
+  divider: {
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    marginVertical: 12,
+  },
+
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  statItem: {
+    flex: 1,
+  },
+  statLabel: { color: "#64748b", fontSize: 11, marginBottom: 2 },
+  statValue: { color: "#10b981", fontSize: 15, fontWeight: "700" }, 
 
   // Empty State
   emptyState: { alignItems: "center", justifyContent: "center", marginTop: 80 },
