@@ -7,34 +7,56 @@ function compileScreener(dsl) {
   const values = [];
   let paramIndex = 1;
 
-  // Map fields to specific tables
-  // c = companies table, f = fundamentals_quarterly table
   const fieldMap = {
-    // From 'companies' table
     "sector": "c.sector",
     "industry": "c.industry",
     "market_cap": "c.market_cap",
     "exchange": "c.exchange",
     "name": "c.name",
     "ticker": "c.ticker",
-
-    // From 'fundamentals_quarterly' table
     "revenue": "f.revenue",
     "net_income": "f.net_income",
+    "profit": "f.net_income",
     "eps": "f.eps",
     "pe": "f.pe_ratio",
-    "roe": "f.roe"
+    "pe_ratio": "f.pe_ratio",
+    "roe": "f.roe",
+    "price": "p.close",
+    "stock_price": "p.close",
+    "close": "p.close",
+    "volume": "p.volume"
   };
 
   dsl.conditions.forEach(condition => {
-    const { field, operator, value } = condition;
-    const dbField = fieldMap[field.toLowerCase()];
+    const { field, value } = condition;
+    let { operator } = condition; // Let us modify this
 
+    const dbField = fieldMap[field.toLowerCase()];
     if (!dbField) throw new Error(`Unknown field: ${field}`);
 
-    // Basic SQL Injection protection for operators
-    const validOps = [">", "<", "=", ">=", "<=", "!=", "LIKE"];
-    if (!validOps.includes(operator)) throw new Error(`Invalid operator: ${operator}`);
+    // ---------------------------------------------------------
+    // 🔧 THE FIX IS HERE (Step 2)
+    // ---------------------------------------------------------
+    // If AI says "NOT IN" but gives a single string (not a list),
+    // we MUST change it to "!=" or Postgres will crash.
+    if (operator.toUpperCase() === "NOT IN") {
+       if (!Array.isArray(value)) {
+          // It's a single word (e.g., "Software"), so use !=
+          operator = "!=";
+       }
+    }
+    // ---------------------------------------------------------
+
+    // 3. Add 'NOT IN' to the allowed list (Whitelist)
+    const validOps = [
+      ">", "<", "=", ">=", "<=", "!=", "<>", 
+      "LIKE", "ILIKE", 
+      "IN", "NOT IN"  // <--- Ensure this is here
+    ];
+
+    if (!validOps.includes(operator.toUpperCase())) {
+      throw new Error(`Invalid operator: ${operator}`);
+    }
 
     clauses.push(`${dbField} ${operator} $${paramIndex}`);
     values.push(value);
@@ -44,23 +66,20 @@ function compileScreener(dsl) {
   const logicOperator = dsl.type === "OR" ? " OR " : " AND ";
   const whereClause = clauses.length > 0 ? `WHERE ${clauses.join(logicOperator)}` : "";
 
-  // JOIN Query: Connects Company Info with Financial Data
-  // Uses DISTINCT ON to ensure we only get one result per ticker
   const sqlQuery = `
-    SELECT DISTINCT ON (c.ticker) 
-      c.ticker, c.name, c.sector, c.industry, c.market_cap,
-      f.revenue, f.net_income, f.pe_ratio
+    SELECT DISTINCT ON (c.ticker)
+      c.ticker, c.name, c.sector, c.industry, 
+      f.revenue, f.pe_ratio,
+      p.close as stock_price
     FROM companies c
-    LEFT JOIN fundamentals_quarterly f ON c.ticker = f.ticker
+    LEFT JOIN fundamentals_quarterly f ON c.ticker = f.ticker 
+    LEFT JOIN price_history p ON c.ticker = p.ticker
     ${whereClause}
-    ORDER BY c.ticker, f.created_at DESC
+    ORDER BY c.ticker, p.time DESC
     LIMIT 50;
   `;
 
-  return {
-    text: sqlQuery,
-    values: values
-  };
+  return { text: sqlQuery, values: values };
 }
 
 module.exports = { compileScreener };

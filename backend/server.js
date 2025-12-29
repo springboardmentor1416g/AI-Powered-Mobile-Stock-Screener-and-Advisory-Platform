@@ -49,6 +49,8 @@ app.get("/health", (req, res) => {
 ============================ */
 const PORT = process.env.PORT || 4000;
 
-app.listen(PORT, () => {
-  console.log("Node backend running on port", PORT);
+// CHANGE IS HERE: Add "0.0.0.0" as the second argument
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Node backend running on port ${PORT}`);
+  console.log(`Network Access Available via IP!`); 
 });
