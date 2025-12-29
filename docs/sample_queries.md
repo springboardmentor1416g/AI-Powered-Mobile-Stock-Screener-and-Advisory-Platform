@@ -120,3 +120,43 @@ These sample queries demonstrate:
 - Supported NL patterns
 - Expected DSL mappings
 - Safe rejection of invalid inputs
+
+
+# Sample NL Queries – M2 Validation
+
+## Supported Queries
+
+### Query 1
+Input:
+PE less than 30
+
+Expected:
+- TCS (PE 18.2)
+- INFY (PE 21.5)
+
+Result:
+PASS
+
+---
+
+### Query 2
+Input:
+PE less than 10
+
+Expected:
+- No results
+
+Result:
+PASS
+
+---
+
+### Query 3
+Input:
+Revenue growth greater than 10
+
+Expected:
+- Mocked results based on stub
+
+Result:
+PASS
