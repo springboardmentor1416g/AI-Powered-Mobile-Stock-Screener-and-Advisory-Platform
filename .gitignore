@@ -34,3 +34,27 @@ projects/auth_session/docs/generated/
 node_modules/
 dist/
 build/
+
+
+# local env / secrets
+.env
+backend/.env
+**/*.env
+
+# python venv
+.venv/
+__pycache__/
+*.pyc
+
+# generated ingestion artifacts
+logs/
+storage/raw/
+data/processed/
+docs/validation_report.md
+
+.venv/
+backend/database/.env
+backend/.env
+.env
+logs/
+data/processed/
