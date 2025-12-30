@@ -58,3 +58,6 @@ backend/.env
 .env
 logs/
 data/processed/
+# validation artifacts
+backend/services/data_validation/logs/
+backend/services/data_validation/reports/
