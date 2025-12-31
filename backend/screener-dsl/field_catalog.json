@@ -1,0 +1,22 @@
+{
+  "version": "v1",
+  "fields": [
+    { "name": "pe_ratio", "type": "number", "time_series": true, "description": "Price to Earnings" },
+    { "name": "peg_ratio", "type": "number", "time_series": true, "description": "PE / Growth" },
+    { "name": "price_to_book", "type": "number", "time_series": true, "description": "Price to Book" },
+
+    { "name": "promoter_holding", "type": "number", "time_series": true, "description": "Promoter holding percentage (0-100)" },
+
+    { "name": "net_profit", "type": "number", "time_series": true, "description": "Net profit" },
+    { "name": "ebitda", "type": "number", "time_series": true, "description": "EBITDA" },
+    { "name": "roe", "type": "number", "time_series": true, "description": "Return on Equity" },
+
+    { "name": "revenue", "type": "number", "time_series": true, "description": "Revenue" },
+    { "name": "revenue_growth_yoy", "type": "number", "time_series": true, "description": "Revenue growth YoY (%)" },
+    { "name": "earnings_growth_yoy", "type": "number", "time_series": true, "description": "Earnings growth YoY (%)" },
+
+    { "name": "total_debt", "type": "number", "time_series": true, "description": "Total debt" },
+    { "name": "free_cash_flow", "type": "number", "time_series": true, "description": "Free cash flow" },
+    { "name": "debt_to_fcf", "type": "number", "time_series": true, "description": "Total debt / |FCF|" }
+  ]
+}
