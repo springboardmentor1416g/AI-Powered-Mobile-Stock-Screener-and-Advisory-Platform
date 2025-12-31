@@ -1,0 +1,5 @@
+[
+  { "symbol": "AAPL", "name": "Apple Inc.", "sector": "Technology", "exchange": "NASDAQ" },
+  { "symbol": "MSFT", "name": "Microsoft Corporation", "sector": "Technology", "exchange": "NASDAQ" },
+  { "symbol": "TSLA", "name": "Tesla Inc.", "sector": "Consumer Cyclical", "exchange": "NASDAQ" }
+]
