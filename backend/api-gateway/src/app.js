@@ -1,22 +1,28 @@
+// backend/api-gateway/src/app.js
 const express = require("express");
-const traceMiddleware = require("./middleware/trace");
+
+const trace = require("./middleware/trace");
 const errorHandler = require("./middleware/errorHandler");
-const notFound = require("./middleware/notFound");
 
 const healthRoutes = require("./routes/health.routes");
 const metadataRoutes = require("./routes/metadata.routes");
+const authRoutes = require("./routes/auth.routes");
+const screenerRoutes = require("./routes/screener.routes");
 
 function createApp() {
   const app = express();
 
-  app.use(express.json());
-  app.use(traceMiddleware);
+  // core middleware
+  app.use(express.json({ limit: "1mb" }));
+  app.use(trace);
 
-  // API versioning
-  app.use("/api/v1", healthRoutes);
-  app.use("/api/v1", metadataRoutes);
+  // routes
+  app.use("/api/v1/health", healthRoutes);
+  app.use("/api/v1/metadata", metadataRoutes);
+  app.use("/api/v1/auth", authRoutes);
+  app.use("/api/v1/screener", screenerRoutes);
 
-  app.use(notFound);
+  // error handler LAST
   app.use(errorHandler);
 
   return app;
