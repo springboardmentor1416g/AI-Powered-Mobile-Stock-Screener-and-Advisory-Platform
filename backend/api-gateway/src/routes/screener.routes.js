@@ -1,6 +1,6 @@
 const router = require("express").Router();
-const { runScreener } = require("../controllers/screener.controller");
+const { runScreenerHandler } = require("../controllers/screener.controller");
 
-router.post("/run", runScreener);
+router.post("/run", runScreenerHandler);
 
 module.exports = router;
