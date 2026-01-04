@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 version: '3.8'
+=======
+version: "3.8"
+>>>>>>> 20c964eb79e44a212167787bd813f92b99b47c37
 
 services:
   db:
@@ -17,5 +21,17 @@ services:
       interval: 10s
       retries: 5
 
+<<<<<<< HEAD
+=======
+  sample_loader:
+    image: python:3.11-slim
+    depends_on:
+      - db
+    working_dir: /workspace
+    volumes:
+      - ./backend/database:/workspace
+    command: ["/bin/bash", "-c", "pip install psycopg2-binary && python sample_loader.py"]
+
+>>>>>>> 20c964eb79e44a212167787bd813f92b99b47c37
 volumes:
   db_data:
