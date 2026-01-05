@@ -140,7 +140,7 @@ ON companies(ticker);
 CREATE INDEX IF NOT EXISTS idx_companies_sector 
 ON companies(sector);
 CREATE INDEX IF NOT EXISTS idx_companies_industry 
-ON companies(industries);
+ON companies(industry);
 CREATE INDEX IF NOT EXISTS idx_companies_market_cap 
 ON companies(market_cap);
 
@@ -160,7 +160,7 @@ ON fundamentals_annual(year);
 
 --ANALYST ESTIMATES 
 CREATE INDEX IF NOT EXISTS idx_analyst_ticker_date 
-ON annalyst_estimates(ticker, estimate_date DESC);
+ON analyst_estimates(ticker, estimate_date DESC);
 
 --COMPOSITE INDEX FOR SCREENER QUERIES 
 CREATE INDEX IF NOT EXISTS idx_screener_fundamentals
