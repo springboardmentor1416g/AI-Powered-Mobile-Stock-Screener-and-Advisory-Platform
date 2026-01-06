@@ -19,10 +19,14 @@ app.use(cors());
    PUBLIC ROUTES
 ============================ */
 app.use("/auth", authRoutes);
+app.use("/auth", require("./auth/routes/authRoutes"));
 
 // LLM Route
 // In Postman, use: POST http://localhost:4000/api/llm/parse
 app.use("/api/llm", llmParserRoutes);
+
+// Add this line near your other routes
+app.use("/api/portfolio", require("./portfolio/routes/portfolioRoutes"));
 
 /* ============================
    PROTECTED ROUTES

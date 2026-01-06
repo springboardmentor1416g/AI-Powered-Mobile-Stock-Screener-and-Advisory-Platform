@@ -1,24 +1,30 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+// 1. Import the AuthProvider we created
+import { AuthProvider } from "../context/AuthContext";
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+    // 2. Wrap EVERYTHING in AuthProvider
+    <AuthProvider>
+      <StatusBar style="light" />
+      <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
+        
+        {/* Landing Page */}
+        <Stack.Screen name="index" />
+        
+        {/* Login/Register Screens */}
+        <Stack.Screen name="(auth)" /> 
+
+        {/* Main App (Tabs) */}
+        <Stack.Screen name="(tabs)" />
+
+        {/* Results Screen */}
+        <Stack.Screen 
+          name="results" 
+          options={{ presentation: 'card' }} 
+        />
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    </AuthProvider>
   );
 }

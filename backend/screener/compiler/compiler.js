@@ -1,6 +1,8 @@
 function compileScreener(dsl) {
-  if (!dsl || !dsl.conditions || dsl.conditions.length === 0) {
-    throw new Error("No conditions found in DSL");
+  // 1. FIX: Remove the strict check that throws "No conditions found"
+  // We now allow queries with NO conditions (which means "Show All")
+  if (!dsl) {
+    throw new Error("Invalid DSL output from AI");
   }
 
   const clauses = [];
@@ -8,69 +10,83 @@ function compileScreener(dsl) {
   let paramIndex = 1;
 
   const fieldMap = {
+    // Company Fields
     "sector": "c.sector",
     "industry": "c.industry",
     "market_cap": "c.market_cap",
     "exchange": "c.exchange",
     "name": "c.name",
     "ticker": "c.ticker",
+
+    // Financials
     "revenue": "f.revenue",
+    "sales": "f.revenue",
+    "turnover": "f.revenue",
     "net_income": "f.net_income",
     "profit": "f.net_income",
+    "earnings": "f.net_income",
     "eps": "f.eps",
     "pe": "f.pe_ratio",
     "pe_ratio": "f.pe_ratio",
+    "valuation": "f.pe_ratio",
     "roe": "f.roe",
+
+    // Price
     "price": "p.close",
     "stock_price": "p.close",
+    "share_price": "p.close",
     "close": "p.close",
     "volume": "p.volume"
   };
 
-  dsl.conditions.forEach(condition => {
-    const { field, value } = condition;
-    let { operator } = condition; // Let us modify this
-
-    const dbField = fieldMap[field.toLowerCase()];
-    if (!dbField) throw new Error(`Unknown field: ${field}`);
-
-    // ---------------------------------------------------------
-    // 🔧 THE FIX IS HERE (Step 2)
-    // ---------------------------------------------------------
-    // If AI says "NOT IN" but gives a single string (not a list),
-    // we MUST change it to "!=" or Postgres will crash.
-    if (operator.toUpperCase() === "NOT IN") {
-       if (!Array.isArray(value)) {
-          // It's a single word (e.g., "Software"), so use !=
-          operator = "!=";
-       }
-    }
-    // ---------------------------------------------------------
-
-    // 3. Add 'NOT IN' to the allowed list (Whitelist)
-    const validOps = [
-      ">", "<", "=", ">=", "<=", "!=", "<>", 
-      "LIKE", "ILIKE", 
-      "IN", "NOT IN"  // <--- Ensure this is here
-    ];
-
-    if (!validOps.includes(operator.toUpperCase())) {
-      throw new Error(`Invalid operator: ${operator}`);
-    }
-
-    clauses.push(`${dbField} ${operator} $${paramIndex}`);
-    values.push(value);
-    paramIndex++;
-  });
+  // 2. FIX: Safely iterate only if conditions exist
+  if (dsl.conditions && dsl.conditions.length > 0) {
+    dsl.conditions.forEach(condition => {
+      const { field, value } = condition;
+      let { operator } = condition;
+  
+      const dbField = fieldMap[field.toLowerCase()];
+      if (!dbField) throw new Error(`Unknown field: ${field}`);
+  
+      // Handle "BETWEEN"
+      if (operator.toUpperCase() === "BETWEEN" && Array.isArray(value)) {
+        clauses.push(`${dbField} BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
+        values.push(value[0]);
+        values.push(value[1]);
+        paramIndex += 2;
+      } 
+      // Handle "NOT IN"
+      else if (operator.toUpperCase() === "NOT IN" && !Array.isArray(value)) {
+        clauses.push(`${dbField} != $${paramIndex}`);
+        values.push(value);
+        paramIndex++;
+      }
+      // Handle Fuzzy Search
+      else if (["LIKE", "ILIKE"].includes(operator.toUpperCase())) {
+        const fuzzyValue = value.includes("%") ? value : `%${value}%`;
+        clauses.push(`${dbField} ${operator} $${paramIndex}`);
+        values.push(fuzzyValue);
+        paramIndex++;
+      }
+      // Standard Operators
+      else {
+        clauses.push(`${dbField} ${operator} $${paramIndex}`);
+        values.push(value);
+        paramIndex++;
+      }
+    });
+  }
 
   const logicOperator = dsl.type === "OR" ? " OR " : " AND ";
+  
+  // 3. FIX: If no clauses, whereClause becomes empty string "" (which means "Return All")
   const whereClause = clauses.length > 0 ? `WHERE ${clauses.join(logicOperator)}` : "";
 
   const sqlQuery = `
     SELECT DISTINCT ON (c.ticker)
       c.ticker, c.name, c.sector, c.industry, 
-      f.revenue, f.pe_ratio,
-      p.close as stock_price
+      f.revenue, f.pe_ratio, f.net_income,
+      p.close as stock_price, p.volume
     FROM companies c
     LEFT JOIN fundamentals_quarterly f ON c.ticker = f.ticker 
     LEFT JOIN price_history p ON c.ticker = p.ticker

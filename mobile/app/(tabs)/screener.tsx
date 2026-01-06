@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,23 +7,68 @@ import {
   Alert,
   ActivityIndicator,
   TextInput,
-  Platform, 
+  Dimensions
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context"; // ✅ Fixes Warning
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 
-// 🔧 CONFIGURATION
-// Use 'localhost' if you ran: adb reverse tcp:4000 tcp:4000
-// Otherwise use 'http://10.0.2.2:4000/api/llm/parse'
+// 1. Import Auth Context
+import { useAuth } from "../../context/AuthContext";
+
+// Import Gesture Handler components
+import { 
+  Gesture, 
+  GestureDetector, 
+  GestureHandlerRootView,
+  Directions 
+} from "react-native-gesture-handler";
+import { runOnJS } from "react-native-reanimated";
+
+// 🔧 CONFIG
 const API_URL = 'http://localhost:4000/api/llm/parse';
 
 export default function ScreenerScreen() {
   const router = useRouter();
+  const { user, logout } = useAuth(); // Get user and logout function
   const [isLoading, setIsLoading] = useState(false);
   const [nlQuery, setNlQuery] = useState("");
+
+  // 🔒 SECURITY CHECK: If no user is logged in, kick them out immediately
+  useEffect(() => {
+    if (!user) {
+      router.replace("/(auth)/login");
+    }
+  }, [user]);
+
+  // Handle Logout
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to log out?", [
+      { text: "Cancel", style: "cancel" },
+      { 
+        text: "Logout", 
+        style: "destructive", 
+        onPress: () => {
+          logout(); // Clear session
+          router.replace("/(auth)/login"); // Go to Login
+        } 
+      }
+    ]);
+  };
+
+  // Navigate to Portfolio (Swipe Up Action)
+  const navigateToPortfolio = () => {
+    router.push("/portfolio");
+  };
+
+  // Gesture: Detect Swipe Up
+  const flingUp = Gesture.Fling()
+    .direction(Directions.UP)
+    .onEnd(() => {
+      runOnJS(navigateToPortfolio)();
+    });
 
   const runScreener = async () => {
     if (!nlQuery.trim()) {
@@ -33,24 +78,18 @@ export default function ScreenerScreen() {
 
     setIsLoading(true);
     try {
-      console.log(`Sending query to: ${API_URL}`);
-
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: nlQuery }),
       });
 
-      // 1. Parse response first
       const data = await res.json();
-
-      // 2. Check if Backend reported a logic error (e.g. "Unknown field")
       if (!data.success) {
         Alert.alert("Query Failed", data.error || "The AI could not process your request.");
         return;
       }
 
-      // 3. Success!
       router.push({
         pathname: "/results",
         params: { results: JSON.stringify(data.results) },
@@ -58,72 +97,82 @@ export default function ScreenerScreen() {
       
     } catch (err: any) {
       console.error(err);
-      // 4. Handle Network Errors separately
-      if (err.message && err.message.includes("Network request failed")) {
-        Alert.alert("Connection Error", "Cannot reach server. Run 'adb reverse tcp:4000 tcp:4000' in terminal.");
-      } else {
-        Alert.alert("Error", "An unexpected error occurred.");
-      }
+      Alert.alert("Error", "Could not connect to server.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <View style={styles.mainContainer}>
-      <StatusBar style="light" />
-      <LinearGradient colors={["#0f172a", "#1e293b"]} style={styles.background} />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureDetector gesture={flingUp}>
+        <View style={styles.mainContainer}>
+          <StatusBar style="light" />
+          <LinearGradient colors={["#0f172a", "#1e293b"]} style={styles.background} />
 
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="white" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>AI Stock Screener</Text>
-          <View style={{ width: 40 }} />
+          <SafeAreaView style={styles.safeArea}>
+            {/* HEADER */}
+            <View style={styles.header}>
+              {/* Left: Spacer (or Back button if needed, but usually not on main tab) */}
+              <View style={{ width: 40 }} />
+
+              <Text style={styles.headerTitle}>AI Stock Screener</Text>
+
+              {/* Right: LOGOUT BUTTON */}
+              <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+                <Ionicons name="power" size={24} color="#f87171" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.contentContainer}>
+              <Text style={styles.sectionTitle}>Ask in Plain English</Text>
+              <Text style={styles.sectionSubtitle}>
+                Example: "Show me Technology companies with stock price above 100"
+              </Text>
+
+              <View style={styles.queryBox}>
+                <TextInput
+                  style={styles.queryInput}
+                  placeholder="Type your stock screening query here..."
+                  placeholderTextColor="#94a3b8"
+                  multiline
+                  value={nlQuery}
+                  onChangeText={setNlQuery}
+                />
+              </View>
+
+              <View style={{ flex: 1 }} />
+
+              <TouchableOpacity
+                onPress={runScreener}
+                disabled={isLoading}
+                style={styles.buttonWrapper}
+              >
+                <LinearGradient
+                  colors={isLoading ? ["#475569", "#334155"] : ["#3b82f6", "#2563eb"]}
+                  style={styles.button}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                      <Text style={styles.buttonText}>Run AI Screener</Text>
+                      <MaterialCommunityIcons name="radar" size={20} color="white" />
+                    </View>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
+
+              <View style={styles.swipeHint}>
+                <MaterialCommunityIcons name="chevron-up" size={24} color="#64748b" />
+                <Text style={styles.swipeText}>Swipe Up for Portfolio</Text>
+              </View>
+
+            </View>
+          </SafeAreaView>
         </View>
-
-        <View style={styles.contentContainer}>
-          <Text style={styles.sectionTitle}>Ask in Plain English</Text>
-          <Text style={styles.sectionSubtitle}>
-            Example: "Show me Technology companies with stock price above 100"
-          </Text>
-
-          <View style={styles.queryBox}>
-            <TextInput
-              style={styles.queryInput}
-              placeholder="Type your stock screening query here..."
-              placeholderTextColor="#94a3b8"
-              multiline
-              value={nlQuery}
-              onChangeText={setNlQuery}
-            />
-          </View>
-
-          <View style={{ flex: 1 }} />
-
-          <TouchableOpacity
-            onPress={runScreener}
-            disabled={isLoading}
-            style={styles.buttonWrapper}
-          >
-            <LinearGradient
-              colors={isLoading ? ["#475569", "#334155"] : ["#3b82f6", "#2563eb"]}
-              style={styles.button}
-            >
-              {isLoading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                  <Text style={styles.buttonText}>Run AI Screener</Text>
-                  <MaterialCommunityIcons name="radar" size={20} color="white" />
-                </View>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    </View>
+      </GestureDetector>
+    </GestureHandlerRootView>
   );
 }
 
@@ -133,13 +182,15 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingVertical: 15 },
   headerTitle: { fontSize: 20, fontWeight: "600", color: "white" },
-  backButton: { width: 40, height: 40, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 12, justifyContent: "center", alignItems: "center" },
+  logoutButton: { width: 40, height: 40, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 12, justifyContent: "center", alignItems: "center" },
   contentContainer: { flex: 1, padding: 24 },
   sectionTitle: { fontSize: 28, fontWeight: "bold", color: "white", marginBottom: 8 },
   sectionSubtitle: { fontSize: 16, color: "#94a3b8", marginBottom: 20 },
   queryBox: { backgroundColor: "#020617", borderRadius: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)", padding: 16, marginBottom: 30 },
   queryInput: { minHeight: 90, color: "white", fontSize: 16, lineHeight: 22, textAlignVertical: "top" },
-  buttonWrapper: { marginBottom: 20 },
+  buttonWrapper: { marginBottom: 10 },
   button: { height: 58, borderRadius: 18, flexDirection: "row", justifyContent: "center", alignItems: "center", shadowColor: "#3b82f6", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 6 },
   buttonText: { fontSize: 18, fontWeight: "bold", color: "white" },
+  swipeHint: { alignItems: "center", marginTop: 20, opacity: 0.7 },
+  swipeText: { color: "#64748b", fontSize: 12, marginTop: -4 }
 });

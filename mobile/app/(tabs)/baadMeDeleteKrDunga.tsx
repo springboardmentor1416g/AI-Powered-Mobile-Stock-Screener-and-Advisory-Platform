@@ -43,8 +43,11 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={styles.button}
             activeOpacity={0.8}
-            onPress={() => router.push("/screener")}
+            onPress={() => router.push("/(auth)/login")}
+            // onPress={() => router.push("/screener")}
           >
+            <Text style={styles.buttonText}>Get Started</Text>
+            
             <LinearGradient
               colors={["#10b981", "#059669"]} // Emerald Green Gradient
               start={{ x: 0, y: 0 }}
