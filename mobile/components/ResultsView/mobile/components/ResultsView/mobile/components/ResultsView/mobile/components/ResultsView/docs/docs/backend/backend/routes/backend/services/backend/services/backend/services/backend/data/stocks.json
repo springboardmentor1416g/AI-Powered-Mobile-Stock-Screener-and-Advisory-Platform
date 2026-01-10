@@ -1,0 +1,4 @@
+[
+  {"name": "ABC Corp", "pe": 4, "revenue_growth": 12},
+  {"name": "XYZ Ltd", "pe": 10, "revenue_growth": -2}
+]
