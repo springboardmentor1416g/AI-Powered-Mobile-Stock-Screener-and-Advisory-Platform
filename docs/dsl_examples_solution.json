@@ -1,0 +1,52 @@
+
+
+```json
+{
+  "examples": [
+    {
+      "natural_language": "PE less than 5 and promoter holding greater than 50%",
+      "dsl": {
+        "filter": {
+          "and": [
+            { "field": "pe_ratio", "operator": "<", "value": 5 },
+            { "field": "promoter_holding", "operator": ">", "value": 50 }
+          ]
+        }
+      }
+    },
+    {
+      "natural_language": "Companies with positive net profit in last 4 quarters",
+      "dsl": {
+        "filter": {
+          "and": [
+            {
+              "field": "net_profit",
+              "operator": ">",
+              "value": 0,
+              "period": {
+                "type": "last_n_quarters",
+                "n": 4,
+                "aggregation": "all"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "natural_language": "PEG ratio below 3",
+      "dsl": {
+        "filter": {
+          "and": [
+            {
+              "field": "peg_ratio",
+              "operator": "<",
+              "value": 3,
+              "derived_from": ["pe_ratio", "eps_growth"]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
