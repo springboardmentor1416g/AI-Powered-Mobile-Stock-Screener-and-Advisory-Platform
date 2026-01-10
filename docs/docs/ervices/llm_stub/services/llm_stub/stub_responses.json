@@ -1,0 +1,26 @@
+{
+  "companies with revenue greater than 1000": {
+    "conditions": [
+      {
+        "field": "revenue",
+        "operator": ">",
+        "value": 1000
+      }
+    ]
+  },
+  "companies with pe ratio less than 20 and net profit greater than 500": {
+    "conditions": [
+      {
+        "field": "pe_ratio",
+        "operator": "<",
+        "value": 20
+      },
+      {
+        "field": "net_profit",
+        "operator": ">",
+        "value": 500
+      }
+    ],
+    "logic": "and"
+  }
+}
