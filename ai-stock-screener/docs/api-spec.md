@@ -1,0 +1,2 @@
+POST /parse
+POST /screen
