@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS stocks (
+  id SERIAL PRIMARY KEY,
+  symbol TEXT UNIQUE
+);
