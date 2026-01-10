@@ -1,7 +1,11 @@
-const express = require("express");
-const router = express.Router();
-const { health } = require("../controllers/health.controller");
+const router = require("express").Router();
 
-router.get("/health", health);
+router.get("/", (req, res) => {
+  res.json({
+    status: "UP",
+    environment: process.env.ENV || "dev",
+    timestamp: new Date().toISOString(),
+  });
+});
 
 module.exports = router;

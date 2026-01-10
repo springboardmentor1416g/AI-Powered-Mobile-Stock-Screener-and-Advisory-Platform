@@ -1,4 +1,22 @@
 import { api } from "./client";
+const BASE_URL = "http://localhost:8081/api/v1";
+
+export async function runScreener(query) {
+  const response = await fetch(`${BASE_URL}/screener/test`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ query }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Screener failed");
+  }
+
+  return response.json();
+}
 
 // v1 contract placeholder: POST /screener/run?limit=20
 export async function runScreener({ queryText, limit = 20 }) {

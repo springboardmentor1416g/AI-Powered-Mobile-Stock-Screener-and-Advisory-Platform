@@ -1,20 +1,21 @@
-// backend/api-gateway/src/controllers/screener.controller.js
+const { validateDSL } = require("../services/screener/validator");
 const { runScreener } = require("../services/screener/runner");
 
 async function runScreenerHandler(req, res, next) {
   try {
     const dsl = req.body;
-    const limit = req.query.limit ? Number(req.query.limit) : 200;
+    validateDSL(dsl); // 🔒 GUARDRail
 
+    const limit = Number(req.query.limit || 50);
     const rows = await runScreener({
       pool: req.app.locals.db,
       dsl,
       limit,
     });
 
-    return res.json({ success: true, count: rows.length, results: rows });
+    res.json({ success: true, count: rows.length, results: rows });
   } catch (err) {
-    return next(err);
+    next(err);
   }
 }
 

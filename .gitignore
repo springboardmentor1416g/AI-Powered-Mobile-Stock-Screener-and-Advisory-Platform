@@ -61,3 +61,29 @@ data/processed/
 # validation artifacts
 backend/services/data_validation/logs/
 backend/services/data_validation/reports/
+
+backend/config/.env.*
+!backend/config/.env.dev
+!backend/config/.env.staging
+!backend/config/.env.prod
+
+
+# Node
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env/secrets
+**/.env
+**/.env.*
+!.env.sample
+
+# Logs / outputs
+logs/
+**/logs/
+**/*.log
+
+# Local data
+data/processed/
+storage/raw/

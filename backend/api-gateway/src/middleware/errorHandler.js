@@ -1,18 +1,15 @@
+// backend/api-gateway/src/middleware/errorHandler.js
 const logger = require("../utils/logger");
 
-function errorHandler(err, req, res, next) {
-  logger.error({ err, traceId: req.traceId }, "Unhandled error");
-
-  if (res.headersSent) return next(err);
-
+module.exports = function errorHandler(err, req, res, next) {
   const status = err.statusCode || 500;
+
+  logger.error({ err, traceId: req.traceId }, "error");
 
   res.status(status).json({
     success: false,
-    message: err.message || "Internal Server Error",
-    error_code: err.errorCode || "SERVER_ERROR",
+    message: err.message || "Server error",
+    error_code: err.code || (status === 400 ? "BAD_REQUEST" : "SERVER_ERROR"),
     trace_id: req.traceId,
   });
-}
-
-module.exports = errorHandler;
+};

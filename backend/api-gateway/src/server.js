@@ -1,21 +1,34 @@
-const createApp = require("./app");
-const { loadEnv } = require("./config/env");
-const { initDb } = require("./config/db");
+// backend/api-gateway/src/server.js
+const { createApp } = require("./app");
 const logger = require("./utils/logger");
+const { initDb, getPool } = require("./config/db");
 
-const env = loadEnv();
+async function start() {
+  try {
+    // init DB first
+    await initDb();
 
-// init DB pool (if DB_PASSWORD missing, you will see error early)
-try {
-  initDb();
-} catch (e) {
-  logger.warn({ err: e.message }, "DB pool not initialized (missing env?). Metadata will fallback to mock.");
+    const app = createApp();
+
+    // attach pool for controllers/services
+    app.locals.db = getPool();
+
+    const port = Number(process.env.PORT || 8080);
+
+    app.listen(port, () => {
+      logger.info(
+        { port, env: process.env.ENV || "dev" },
+        "API Gateway started"
+      );
+    });
+  } catch (err) {
+    logger.error({ err }, "Failed to start API Gateway");
+    process.exit(1);
+  }
 }
 
-const app = createApp();
+start();
 
-const port = Number(process.env.PORT || 8080);
 
-app.listen(port, () => {
-  logger.info({ port, env }, "API Gateway started");
-});
+const screenerRoutes = require("./routes/screener.routes");
+app.use("/api/v1/screener", screenerRoutes);

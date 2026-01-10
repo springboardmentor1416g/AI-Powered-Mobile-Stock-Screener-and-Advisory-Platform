@@ -1,6 +1,6 @@
 const express = require("express");
-const { health } = require("../controllers/healthController");
-const { stocks } = require("../controllers/metadataController");
+const { health } = require("../controllers/health.controller");
+const { stocks } = require("../controllers/metadata.controller");
 
 const router = express.Router();
 

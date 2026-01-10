@@ -1,7 +1,13 @@
-const express = require("express");
-const router = express.Router();
-const { listStocks } = require("../controllers/metadata.controller");
+const router = require("express").Router();
+const { getStockMetadata } = require("../services/metadata.service");
 
-router.get("/metadata/stocks", listStocks);
+router.get("/stocks", async (req, res, next) => {
+  try {
+    const rows = await getStockMetadata();
+    res.json(rows);
+  } catch (e) {
+    next(e);
+  }
+});
 
 module.exports = router;

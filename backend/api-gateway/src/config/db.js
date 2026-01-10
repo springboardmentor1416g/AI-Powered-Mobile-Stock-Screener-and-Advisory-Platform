@@ -1,9 +1,10 @@
+// backend/api-gateway/src/config/db.js
 const { Pool } = require("pg");
 const logger = require("../utils/logger");
 
-let pool = null;
+let pool;
 
-function initDb() {
+async function initDb() {
   pool = new Pool({
     host: process.env.DB_HOST || "localhost",
     port: Number(process.env.DB_PORT || 5432),
@@ -13,24 +14,15 @@ function initDb() {
     max: 10,
   });
 
-  pool.on("error", (err) => {
-    logger.error({ err }, "Unexpected PG pool error");
-  });
-
+  await pool.query("SELECT 1;");
   logger.info(
-    {
-      db: process.env.DB_NAME || "stock_screener",
-      host: process.env.DB_HOST || "localhost",
-      port: Number(process.env.DB_PORT || 5432),
-    },
+    { db: process.env.DB_NAME || "stock_screener", host: process.env.DB_HOST || "localhost", port: Number(process.env.DB_PORT || 5432) },
     "DB pool initialized"
   );
-
-  return pool;
 }
 
 function getPool() {
-  if (!pool) throw new Error("DB pool not initialized. Call initDb() first.");
+  if (!pool) throw new Error("DB pool not initialized");
   return pool;
 }
 
