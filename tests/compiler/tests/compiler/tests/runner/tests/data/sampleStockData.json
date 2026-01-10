@@ -1,0 +1,20 @@
+[
+  {
+    "symbol": "AAA",
+    "peRatio": 15,
+    "marketCap": 1200,
+    "growth": 12
+  },
+  {
+    "symbol": "BBB",
+    "peRatio": 30,
+    "marketCap": 800,
+    "growth": -5
+  },
+  {
+    "symbol": "CCC",
+    "peRatio": 0,
+    "marketCap": 500,
+    "growth": 0
+  }
+]
