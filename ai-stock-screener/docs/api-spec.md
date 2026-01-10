@@ -1,2 +1,0 @@
-POST /parse
-POST /screen
