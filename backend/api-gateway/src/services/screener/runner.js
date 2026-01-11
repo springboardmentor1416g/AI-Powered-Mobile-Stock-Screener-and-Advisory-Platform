@@ -1,5 +1,6 @@
 const { compileDSL } = require("./compiler");
-
+const { compileDsl } = require("../dsl/compiler");
+const { computeDerivedMetrics } = require("../metrics/derivedMetrics");
 // Uses "latest annual" row per ticker from metrics_normalized.
 // Assumes period_label sorts descending (e.g., 2025 > 2024).
 async function runScreener({ pool, dsl, limit = 200 }) {
@@ -55,4 +56,20 @@ LIMIT ${limitParam};
   return result.rows;
 }
 
+async function runScreener({ pool, dsl, limit }) {
+  const { rows } = await pool.query(
+    "SELECT * FROM stocks LIMIT $1",
+    [limit]
+  );
+
+  const compiledFilter = compileDsl(dsl);
+
+  return rows
+    .map(r => ({ ...r, ...computeDerivedMetrics(r) }))
+    .filter(compiledFilter);
+} 
+
 module.exports = { runScreener };
+
+
+
