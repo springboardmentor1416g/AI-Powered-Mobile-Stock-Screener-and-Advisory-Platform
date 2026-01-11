@@ -7,6 +7,7 @@ const healthRoutes = require("./routes/health.routes");
 const metadataRoutes = require("./routes/metadata.routes");
 const authRoutes = require("./routes/auth.routes");
 const screenerRoutes = require("./routes/screener.routes");
+const nlScreenerRoutes = require("./routes/nlScreener.routes");
 
 function createApp() {
   const app = express();
@@ -24,5 +25,7 @@ function createApp() {
 
   return app;
 }
+app.use("/api/v1/nl-screener", nlScreenerRoutes);
 
 module.exports = { createApp };
+
