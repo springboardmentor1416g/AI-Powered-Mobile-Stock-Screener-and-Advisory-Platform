@@ -1,60 +1,24 @@
-# Virtual environment
-.venv/
-env/
-venv/
-
-# Python cache
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+venv/
+.env
 
-# IDE files
+# Node
+node_modules/
+npm-debug.log*
+
+# React Native / Android
+android/.gradle/
+android/app/build/
+*.keystore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
 .vscode/
 .idea/
-
-# Environment / Secret files
-*.env
-.env
-.env.local
-
-# Logs and runtime output
-logs/
-output/
-*.log
-
-# Data dumps
-*.db
-*.sqlite3
-
-# Auto-generated folders
-projects/auth_session/output/
-projects/auth_session/logs/
-projects/auth_session/docs/generated/
-
-# Node related (if frontend exists)
-node_modules/
-dist/
-build/
-.env
-
-
-# Node
-node_modules/
-logs/
-
-# Data artifacts
-data/processed/
-*.csv
-
-# Environment files
-.env*
-backend/api-gateway/.env*
-
-# Node
-node_modules/
-logs/
-
-# Data artifacts
-data/processed/
-*.csv
-
-
