@@ -1,10 +1,32 @@
-import dotenv from 'dotenv';
-import app from './src/app.js';
+import express from 'express';
 
-dotenv.config();
+const app = express();
 
-const PORT = process.env.PORT || 3000;
+app.use(express.json()); // ✅ REQUIRED
 
-app.listen(PORT, () => {
-  console.log(`API Gateway running on port ${PORT}`);
+app.post('/api/llm/translate', (req, res) => {
+  const { query } = req.body;
+
+  if (!query) {
+    return res.status(400).json({ error: 'query is required' });
+  }
+
+  return res.json({
+    success: true,
+    dsl: {
+      filters: [
+        {
+          metric: 'revenue_growth',
+          operator: '>',
+          value: 10,
+          period: 'annual'
+        }
+      ],
+      logic: 'AND'
+    }
+  });
+});
+
+app.listen(3000, '0.0.0.0', () => {
+  console.log('API Gateway running on port 3000');
 });

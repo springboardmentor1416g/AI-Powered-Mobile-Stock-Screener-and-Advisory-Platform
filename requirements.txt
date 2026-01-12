@@ -1,11 +1,10 @@
-psycopg2-binary
-pandas
-requests
-PyYAML
-python-dateutil
-tqdm
-numpy
-pendulum
+<<<<<<< HEAD
+fastapi
+uvicorn
+pydantic
+=======
+fastapi
+uvicorn
+pydantic
 sqlalchemy
-python-dotenv
-retrying
+>>>>>>> dad0d0c
