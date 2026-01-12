@@ -1,0 +1,19 @@
+{
+  "filter": {
+    "and": [
+      {
+        "field": "net_profit",
+        "operator": ">",
+        "value": 0,
+        "period": { "type": "last_n_quarters", "n": 4, "aggregation": "all" }
+      },
+      {
+        "field": "revenue_growth_yoy",
+        "operator": ">",
+        "value": 10,
+        "period": { "type": "last_n_quarters", "n": 4, "aggregation": "avg" }
+      }
+    ]
+  },
+  "options": { "missing_data": "reject", "limit": 50 }
+}

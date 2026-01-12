@@ -1,0 +1,20 @@
+{
+  "filter": {
+    "or": [
+      {
+        "and": [
+          { "field": "pe_ratio", "operator": "<", "value": 15 },
+          { "field": "debt_to_fcf", "operator": "<", "value": 5 }
+        ]
+      },
+      {
+        "not": {
+          "field": "free_cash_flow",
+          "operator": "<=",
+          "value": 0,
+          "period": { "type": "last_n_years", "n": 3, "aggregation": "all" }
+        }
+      }
+    ]
+  }
+}

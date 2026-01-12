@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stock-screener.local/schemas/screener_dsl.schema.json",
+  "title": "Stock Screener DSL",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["filter"],
+  "properties": {
+    "filter": { "$ref": "#/$defs/node" },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sector": { "type": "string" },
+        "exchange": { "type": "string", "enum": ["NSE", "BSE", "NYSE", "NASDAQ"] },
+        "currency": { "type": "string", "enum": ["INR", "USD"] },
+        "as_of": { "type": "string", "format": "date" }
+      }
+    },
+    "options": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "missing_data": {
+          "type": "string",
+          "enum": ["reject", "skip_company", "treat_as_null"]
+        },
+        "limit": { "type": "integer", "minimum": 1, "maximum": 500 },
+        "sort": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["field", "direction"],
+          "properties": {
+            "field": { "$ref": "#/$defs/field" },
+            "direction": { "type": "string", "enum": ["asc", "desc"] }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "node": {
+      "oneOf": [
+        { "$ref": "#/$defs/logic_and" },
+        { "$ref": "#/$defs/logic_or" },
+        { "$ref": "#/$defs/logic_not" },
+        { "$ref": "#/$defs/condition" }
+      ]
+    },
+
+    "logic_and": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["and"],
+      "properties": {
+        "and": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": { "$ref": "#/$defs/node" }
+        }
+      }
+    },
+
+    "logic_or": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["or"],
+      "properties": {
+        "or": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": { "$ref": "#/$defs/node" }
+        }
+      }
+    },
+
+    "logic_not": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["not"],
+      "properties": {
+        "not": { "$ref": "#/$defs/node" }
+      }
+    },
+
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "operator"],
+      "properties": {
+        "field": { "$ref": "#/$defs/field" },
+
+        "operator": {
+          "type": "string",
+          "enum": ["<", ">", "<=", ">=", "=", "!=", "between", "in", "exists"]
+        },
+
+        "value": {},
+
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 200,
+          "items": {}
+        },
+
+        "range": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["min", "max"],
+          "properties": {
+            "min": {},
+            "max": {}
+          }
+        },
+
+        "period": { "$ref": "#/$defs/period" },
+
+        "null_handling": {
+          "type": "string",
+          "enum": ["reject", "treat_as_false", "treat_as_true"]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "operator": { "const": "exists" } } },
+          "then": { "not": { "required": ["value", "values", "range"] } }
+        },
+        {
+          "if": { "properties": { "operator": { "const": "in" } } },
+          "then": { "required": ["values"] }
+        },
+        {
+          "if": { "properties": { "operator": { "const": "between" } } },
+          "then": { "required": ["range"] }
+        },
+        {
+          "if": {
+            "properties": {
+              "operator": {
+                "enum": ["<", ">", "<=", ">=", "=", "!="]
+              }
+            }
+          },
+          "then": { "required": ["value"] }
+        }
+      ]
+    },
+
+    "period": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["latest_quarter", "latest_annual", "last_n_quarters", "last_n_years"]
+        },
+        "n": { "type": "integer", "minimum": 1, "maximum": 40 },
+        "aggregation": {
+          "type": "string",
+          "enum": ["all", "any", "avg", "sum", "min", "max"]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "enum": ["last_n_quarters", "last_n_years"] } } },
+          "then": { "required": ["n", "aggregation"] }
+        }
+      ]
+    },
+
+    "field": {
+      "type": "string",
+      "enum": [
+        "pe_ratio",
+        "peg_ratio",
+        "price_to_book",
+
+        "promoter_holding",
+
+        "net_profit",
+        "ebitda",
+        "roe",
+
+        "revenue",
+        "revenue_growth_yoy",
+        "earnings_growth_yoy",
+
+        "total_debt",
+        "free_cash_flow",
+        "debt_to_fcf"
+      ]
+    }
+  }
+}

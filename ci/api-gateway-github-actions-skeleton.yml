@@ -1,0 +1,21 @@
+name: api-gateway-ci-skeleton
+
+on:
+  push:
+    branches: [ "mrigank" ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install
+        working-directory: backend/api-gateway
+        run: npm install
+      - name: Test
+        working-directory: backend/api-gateway
+        run: npm test
