@@ -1,0 +1,33 @@
+services:
+  timescaledb_dev:
+    image: timescale/timescaledb:latest-pg14
+    container_name: timescaledb_dev
+    environment:
+      POSTGRES_DB: stock_screener
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: kanan40/80
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  api-gateway:
+    build: ./backend/api-gateway
+    container_name: api_gateway
+    depends_on:
+      - timescaledb_dev
+    environment:
+      PORT: 8080
+      DB_HOST: timescaledb_dev
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: kanan40/80
+      DB_NAME: stock_screener
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/api-gateway/src:/app/src
+      - ./backend/services:/app/services
+
+volumes:
+  db_data:

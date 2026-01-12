@@ -1,0 +1,32 @@
+[
+  {
+    "description": "Low PE and high promoter holding",
+    "dsl": {
+      "filter": {
+        "and": [
+          { "field": "pe_ratio", "operator": "<", "value": 10 },
+          { "field": "promoter_holding", "operator": ">", "value": 50 }
+        ]
+      }
+    }
+  },
+  {
+    "description": "Positive earnings last 4 quarters",
+    "dsl": {
+      "filter": {
+        "and": [
+          {
+            "field": "net_profit",
+            "operator": ">",
+            "value": 0,
+            "period": {
+              "type": "last_n_quarters",
+              "n": 4,
+              "aggregation": "all"
+            }
+          }
+        ]
+      }
+    }
+  }
+]

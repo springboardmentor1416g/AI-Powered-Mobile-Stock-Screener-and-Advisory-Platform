@@ -1,0 +1,8 @@
+{
+  "filter": {
+    "and": [
+      { "field": "pe_ratio", "operator": "<", "value": 10 },
+      { "field": "promoter_holding", "operator": ">", "value": 50 }
+    ]
+  }
+}
