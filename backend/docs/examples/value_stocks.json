@@ -1,0 +1,35 @@
+{
+  "filter": {
+    "and": [
+      {
+        "field": "pe_ratio",
+        "operator": "<",
+        "value": 10
+      },
+      {
+        "field": "price_to_book",
+        "operator": "<",
+        "value": 1.5
+      },
+      {
+        "field": "debt_to_fcf",
+        "operator": "<",
+        "value": 2
+      },
+      {
+        "field": "free_cash_flow",
+        "operator": ">",
+        "value": 0,
+        "period": {
+          "type": "last_n_years",
+          "n": 3,
+          "aggregation": "all"
+        }
+      }
+    ]
+  },
+  "meta": {
+    "strategy": "value",
+    "description": "Low valuation, low leverage, consistent cash generation"
+  }
+}
