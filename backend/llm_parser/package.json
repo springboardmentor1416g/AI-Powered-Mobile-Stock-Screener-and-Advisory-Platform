@@ -1,0 +1,22 @@
+{
+  "name": "llm_parser",
+  "version": "1.0.0",
+  "description": "llm_parser",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "AI-Powered-Mobile-Stock-Screener-and-Advisory-Platform"
+  },
+  "author": "manavi",
+  "license": "ISC",
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "axios": "^1.13.2",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "nodemon": "^3.1.11"
+  }
+}
