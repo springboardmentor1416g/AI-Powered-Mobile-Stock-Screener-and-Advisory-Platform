@@ -1,0 +1,22 @@
+{
+  "$id": "alert-condition",
+  "type": "object",
+  "required": ["metric", "operator", "value"],
+  "properties": {
+    "metric": {
+      "type": "string"
+    },
+    "operator": {
+      "type": "string",
+      "enum": [">", "<", ">=", "<=", "==", "!="]
+    },
+    "value": {
+      "type": ["number", "string"]
+    },
+    "time_window": {
+      "type": "string",
+      "pattern": "^[0-9]+[dwm]$"
+    }
+  },
+  "additionalProperties": false
+}

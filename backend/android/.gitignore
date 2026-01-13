@@ -1,0 +1,15 @@
+# Android build artifacts
+/android/.gradle/
+/android/build/
+/android/app/build/
+/android/app/.cxx/
+/android/app/.externalNativeBuild/
+
+# CMake / NDK
+*.ninja
+*.so
+*.o
+*.log
+
+# Generated reports
+/android/build/reports/

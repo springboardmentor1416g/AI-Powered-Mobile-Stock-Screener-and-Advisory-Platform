@@ -1,0 +1,14 @@
+{
+  "conditions": {
+    "operator": "AND",
+    "rules": [
+      {
+        "metric": "REVENUE_GROWTH",
+        "operator": ">",
+        "value": 0.1,
+        "period": { "type": "years", "last": 3 },
+        "null_handling": "fail"
+      }
+    ]
+  }
+}

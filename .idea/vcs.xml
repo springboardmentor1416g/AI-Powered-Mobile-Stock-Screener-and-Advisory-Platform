@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/AI-Powered-Mobile-Stock-Screener-and-Advisory-Platform" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/AI-Powered-Mobile-Stock-Screener-and-Advisory-Platform/nl-stock-screener/frontend/NLStockScreener" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/MobileApp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/backend" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/frontend/mobile/MobileApp" vcs="Git" />
+  </component>
+</project>

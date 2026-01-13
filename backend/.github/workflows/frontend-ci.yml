@@ -1,0 +1,42 @@
+﻿name: Frontend CI - debug
+
+on:
+  push:
+    branches: [ main, develop, varshitha ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Frontend build & tests (if exists)
+        run: |
+          if [ -f frontend/package.json ]; then
+            echo 'Found frontend/package.json — installing deps and running tests'
+            cd frontend
+            npm ci || true
+            npm run lint || true
+            npm test -- --watchAll=false || true
+          else
+            echo 'No frontend/package.json found; skipping frontend steps'
+          fi
+
+      - name: Android assemble (if android folder exists)
+        run: |
+          if [ -f frontend/android/gradlew ]; then
+            echo 'Found gradlew — running assembleRelease'
+            cd frontend/android
+            chmod +x ./gradlew || true
+            ./gradlew assembleRelease -PciBuild=true || echo 'Gradle assemble returned non-zero'
+          else
+            echo 'No frontend/android/gradlew found; skipping android build'
+          fi

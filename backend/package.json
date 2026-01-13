@@ -1,0 +1,18 @@
+{
+  "name": "MobileApp",
+  "version": "0.0.1",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "android": "react-native run-android",
+    "start": "react-native start"
+  },
+  "devDependencies": {
+    "@react-native-community/cli": "^20.0.2",
+    "@react-native-community/cli-platform-android": "^20.0.2",
+    "@react-native/metro-config": "^0.83.1"
+  },
+  "dependencies": {
+    "react-native": "^0.83.1"
+  }
+}
