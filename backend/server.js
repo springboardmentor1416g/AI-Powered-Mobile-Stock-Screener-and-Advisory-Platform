@@ -1,14 +1,17 @@
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 require("dotenv").config();
 
-// Auth Routes (Ensure these files exist in backend/auth/...)
+// 1. Import Routes
 const authRoutes = require("./auth/routes/authRoutes");
 const authMiddleware = require("./auth/middleware/auth");
-
-// ✅ CORRECTED PATH: Points to where we created the file
 const llmParserRoutes = require("./ingestion/routes/llmParserRoutes");
+
+// ✅ NEW: Import Watchlist Routes (Points to the file we just made)
+const watchlistRoutes = require("./portfolio/routes/watchlistRoutes");
+
+// ⚠️ Optional: Portfolio Routes (Uncomment only if portfolioRoutes.js has 'module.exports = router')
+ const portfolioRoutes = require("./portfolio/routes/portfolioRoutes");
 
 const app = express();
 
@@ -19,14 +22,20 @@ app.use(cors());
    PUBLIC ROUTES
 ============================ */
 app.use("/auth", authRoutes);
-app.use("/auth", require("./auth/routes/authRoutes"));
 
 // LLM Route
-// In Postman, use: POST http://localhost:4000/api/llm/parse
 app.use("/api/llm", llmParserRoutes);
 
-// Add this line near your other routes
-app.use("/api/portfolio", require("./portfolio/routes/portfolioRoutes"));
+/* ============================
+   USER DATA ROUTES
+============================ */
+
+// ✅ REGISTER WATCHLIST ROUTE
+// This enables: POST http://localhost:4000/api/watchlist/add
+app.use("/api/watchlist", watchlistRoutes);
+
+// ⚠️ Portfolio Route (Uncomment when ready)
+ app.use("/api/portfolio", portfolioRoutes);
 
 /* ============================
    PROTECTED ROUTES
@@ -53,7 +62,6 @@ app.get("/health", (req, res) => {
 ============================ */
 const PORT = process.env.PORT || 4000;
 
-// CHANGE IS HERE: Add "0.0.0.0" as the second argument
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Node backend running on port ${PORT}`);
   console.log(`Network Access Available via IP!`); 

@@ -1,11 +1,22 @@
 import React from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, SafeAreaView } from "react-native";
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  FlatList, 
+  TouchableOpacity, 
+  SafeAreaView,
+  Alert 
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 
-// Matches the backend response structure
+// ✅ Import Services for Watchlist Logic
+import { useAuth } from "../context/AuthContext";
+import { UserDataService } from "../services/api";
+
 type StockResult = {
   ticker: string;
   name: string;
@@ -17,29 +28,20 @@ type StockResult = {
   market_cap?: string | number;
 };
 
-// Helper to make numbers readable (e.g. 1.2B)
 const formatCurrency = (value: string | number) => {
   const num = typeof value === 'string' ? parseFloat(value) : value;
-  
   if (!num || isNaN(num)) return "N/A";
-
-  if (num >= 1e12) {
-    return `$${(num / 1e12).toFixed(2)}T`;
-  }
-  if (num >= 1e9) {
-    return `$${(num / 1e9).toFixed(2)}B`;
-  }
-  if (num >= 1e6) {
-    return `$${(num / 1e6).toFixed(2)}M`;
-  }
+  if (num >= 1e12) return `$${(num / 1e12).toFixed(2)}T`;
+  if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
+  if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
   return `$${num.toLocaleString()}`;
 };
 
 export default function ResultsScreen() {
   const router = useRouter();
+  const { user } = useAuth(); // ✅ Get User for API calls
   const { results } = useLocalSearchParams<{ results?: string }>();
   
-  // Parse data safely
   let data: StockResult[] = [];
   try {
     data = results ? JSON.parse(results) : [];
@@ -47,9 +49,26 @@ export default function ResultsScreen() {
     console.error("Failed to parse results:", e);
   }
 
+  // ✅ New Logic: Add directly to Watchlist
+  const handleAddToWatchlist = async (ticker: string) => {
+    if (!user) {
+      Alert.alert("Login Required", "Please login to add to watchlist.");
+      return;
+    }
+
+    try {
+      await UserDataService.addToWatchlist(user.id, ticker);
+      Alert.alert("Success", `${ticker} added to your Watchlist!`);
+    } catch (error) {
+      Alert.alert("Error", "Could not add to watchlist.");
+    }
+  };
+
   const renderItem = ({ item }: { item: StockResult }) => (
-    <View style={styles.card}>
-      {/* Header Row: Icon + Ticker + Name */}
+    // ❌ REMOVED: Navigation onPress
+    // The card is now just a View (uncallable) container with interactive buttons inside
+    <View style={styles.card}> 
+      {/* Header Row: Icon + Ticker + Name + ADD BUTTON */}
       <View style={styles.cardHeader}>
         <View style={styles.headerLeft}>
           <LinearGradient
@@ -63,9 +82,14 @@ export default function ResultsScreen() {
             <Text style={styles.companyName} numberOfLines={1}>{item.name}</Text>
           </View>
         </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{item.sector}</Text>
-        </View>
+
+        {/* ✅ NEW: Add to Watchlist Button */}
+        <TouchableOpacity 
+          style={styles.addButton}
+          onPress={() => handleAddToWatchlist(item.ticker)}
+        >
+          <Ionicons name="add-circle-outline" size={28} color="#34d399" />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.divider} />
@@ -98,7 +122,6 @@ export default function ResultsScreen() {
       <LinearGradient colors={["#0f172a", "#1e293b"]} style={styles.background} />
 
       <SafeAreaView style={styles.safeArea}>
-        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color="white" />
@@ -136,7 +159,6 @@ const styles = StyleSheet.create({
   background: { position: "absolute", left: 0, right: 0, top: 0, height: "100%" },
   safeArea: { flex: 1 },
 
-  // Header
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -158,7 +180,6 @@ const styles = StyleSheet.create({
   resultsMeta: { marginBottom: 15, marginTop: 10 },
   resultCount: { color: "#94a3b8", fontSize: 14, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 },
 
-  // Card Styles
   card: {
     backgroundColor: "#1e293b",
     borderRadius: 16,
@@ -170,7 +191,7 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center", // Align button with text
   },
   headerLeft: {
     flexDirection: "row",
@@ -189,13 +210,12 @@ const styles = StyleSheet.create({
   tickerText: { color: "white", fontSize: 18, fontWeight: "bold" },
   companyName: { color: "#64748b", fontSize: 12, maxWidth: 180 },
   
-  badge: {
-    backgroundColor: "rgba(255,255,255,0.08)",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+  // ✅ Style for the Add Button
+  addButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: "rgba(52, 211, 153, 0.1)", // Subtle green background
   },
-  badgeText: { color: "#cbd5e1", fontSize: 10, fontWeight: "600" },
 
   divider: {
     height: 1,
@@ -213,7 +233,6 @@ const styles = StyleSheet.create({
   statLabel: { color: "#64748b", fontSize: 11, marginBottom: 2 },
   statValue: { color: "#10b981", fontSize: 15, fontWeight: "700" }, 
 
-  // Empty State
   emptyState: { alignItems: "center", justifyContent: "center", marginTop: 80 },
   emptyText: { color: "#64748b", marginTop: 16, fontSize: 16 },
 });

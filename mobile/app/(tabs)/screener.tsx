@@ -7,15 +7,14 @@ import {
   Alert,
   ActivityIndicator,
   TextInput,
-  Dimensions
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, useRootNavigationState } from "expo-router"; // 👈 1. Add this import
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 
-// 1. Import Auth Context
+// Import Auth Context
 import { useAuth } from "../../context/AuthContext";
 
 // Import Gesture Handler components
@@ -32,16 +31,21 @@ const API_URL = 'http://localhost:4000/api/llm/parse';
 
 export default function ScreenerScreen() {
   const router = useRouter();
-  const { user, logout } = useAuth(); // Get user and logout function
+  const rootNavigationState = useRootNavigationState(); // 👈 2. Get navigation state
+  const { user, logout } = useAuth();
+  
   const [isLoading, setIsLoading] = useState(false);
   const [nlQuery, setNlQuery] = useState("");
 
-  // 🔒 SECURITY CHECK: If no user is logged in, kick them out immediately
+  // 🔒 SECURITY CHECK: If no user is logged in, kick them out
   useEffect(() => {
+    // 👈 3. CRITICAL FIX: Don't navigate until navigation is ready
+    if (!rootNavigationState?.key) return;
+
     if (!user) {
       router.replace("/(auth)/login");
     }
-  }, [user]);
+  }, [user, rootNavigationState?.key]); // 👈 4. Add dependency
 
   // Handle Logout
   const handleLogout = () => {
@@ -51,8 +55,8 @@ export default function ScreenerScreen() {
         text: "Logout", 
         style: "destructive", 
         onPress: () => {
-          logout(); // Clear session
-          router.replace("/(auth)/login"); // Go to Login
+          logout(); 
+          router.replace("/(auth)/login");
         } 
       }
     ]);
@@ -60,7 +64,7 @@ export default function ScreenerScreen() {
 
   // Navigate to Portfolio (Swipe Up Action)
   const navigateToPortfolio = () => {
-    router.push("/portfolio");
+    router.push("/portfolio"); // This is safe because it's triggered by a user action
   };
 
   // Gesture: Detect Swipe Up
@@ -103,6 +107,11 @@ export default function ScreenerScreen() {
     }
   };
 
+  // 👈 5. Prevent rendering until navigation is ready to avoid glitches
+  if (!rootNavigationState?.key) {
+    return null; 
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <GestureDetector gesture={flingUp}>
@@ -113,9 +122,7 @@ export default function ScreenerScreen() {
           <SafeAreaView style={styles.safeArea}>
             {/* HEADER */}
             <View style={styles.header}>
-              {/* Left: Spacer (or Back button if needed, but usually not on main tab) */}
               <View style={{ width: 40 }} />
-
               <Text style={styles.headerTitle}>AI Stock Screener</Text>
 
               {/* Right: LOGOUT BUTTON */}
