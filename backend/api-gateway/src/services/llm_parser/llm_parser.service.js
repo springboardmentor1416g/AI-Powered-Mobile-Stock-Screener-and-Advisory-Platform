@@ -10,7 +10,7 @@ exports.translate = async (nlQuery) => {
     throw new Error('Natural language query is required');
   }
 
-  const dsl = llmStub.translate(nlQuery);
+  const dsl = llmStub.translateNLToDSL(nlQuery);
 
   if (!dsl) {
     throw new Error('LLM could not translate query');

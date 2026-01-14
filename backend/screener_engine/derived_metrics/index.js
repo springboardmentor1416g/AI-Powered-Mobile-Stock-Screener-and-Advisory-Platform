@@ -4,8 +4,23 @@ const computeEPSCAGR = require('./eps_cagr');
 const computeRevenueCAGR = require('./revenue_cagr');
 
 module.exports = {
-  computePEG,
-  computeDebtToFCF,
-  computeEPSCAGR,
-  computeRevenueCAGR
+  peg_ratio: {
+    compute: computePEG,
+    requires: ['pe_ratio', 'eps_growth']
+  },
+
+  debt_to_fcf: {
+    compute: computeDebtToFCF,
+    requires: ['debt', 'free_cash_flow']
+  },
+
+  eps_cagr: {
+    compute: computeEPSCAGR,
+    requires: ['eps_history']
+  },
+
+  revenue_cagr: {
+    compute: computeRevenueCAGR,
+    requires: ['revenue_history']
+  }
 };

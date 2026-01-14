@@ -26,8 +26,7 @@ app.use('/api/v1', protectedRoutes);
 app.use('/api/v1/health', healthRoutes);
 app.use('/api/v1/metadata', metadataRoutes);
 app.use('/api/v1/screener', screenerRoutes);
-app.use('/api/v1/llm', llmRoutes);
-app.use('/api/v1/screener', llmParserRoutes);
+app.use('/api/v1/llm', llmParserRoutes);
 
 /* ---------- 404 Handler ---------- */
 app.use((req, res) => {

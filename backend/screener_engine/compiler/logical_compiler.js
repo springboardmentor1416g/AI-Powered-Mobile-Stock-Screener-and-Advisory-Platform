@@ -1,18 +1,24 @@
 const compileCondition = require('./condition_compiler');
 
-function compileGroup(conditions, startIndex = 1) {
+function compileGroup(conditions, joiner = 'AND', startIndex = 1) {
   let sqlParts = [];
   let params = [];
   let index = startIndex;
 
   for (const condition of conditions) {
-    if (condition.and || condition.or) {
-      const key = condition.and ? 'and' : 'or';
-      const nested = compileGroup(condition[key], index);
+    if (condition.and) {
+      const nested = compileGroup(condition.and, 'AND', index);
       sqlParts.push(`(${nested.sql})`);
       params.push(...nested.params);
       index += nested.params.length;
-    } else {
+    } 
+    else if (condition.or) {
+      const nested = compileGroup(condition.or, 'OR', index);
+      sqlParts.push(`(${nested.sql})`);
+      params.push(...nested.params);
+      index += nested.params.length;
+    } 
+    else {
       const compiled = compileCondition(condition, index);
       sqlParts.push(compiled.sql);
       params.push(...compiled.params);
@@ -21,7 +27,7 @@ function compileGroup(conditions, startIndex = 1) {
   }
 
   return {
-    sql: sqlParts.join(' AND '),
+    sql: sqlParts.join(` ${joiner} `),
     params
   };
 }

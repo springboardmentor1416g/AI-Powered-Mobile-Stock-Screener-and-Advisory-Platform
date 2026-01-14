@@ -1,42 +1,25 @@
-const ALLOWED_FIELDS = [
-  'pe_ratio',
-  'revenue',
-  'revenue_growth_yoy',
-  'net_profit'
-];
+/**
+ * LLM Parser Validation
+ * Lightweight sanity checks ONLY
+ * Full validation happens in screener_engine
+ */
 
-const ALLOWED_OPERATORS = ['<', '>', '<=', '>=', '=', '!='];
-
-function validateCondition(condition) {
-  if (!condition.field || !ALLOWED_FIELDS.includes(condition.field)) {
-    throw new Error(`Unsupported field: ${condition.field}`);
+function validateDSL(dsl) {
+  if (!dsl || typeof dsl !== 'object') {
+    throw new Error('Invalid DSL: must be an object');
   }
 
-  if (!condition.operator || !ALLOWED_OPERATORS.includes(condition.operator)) {
-    throw new Error(`Unsupported operator: ${condition.operator}`);
-  }
+  // Prevent unsafe keys
+  const forbiddenKeys = ['sql', 'query', 'raw', '$where'];
 
-  if (condition.value === undefined) {
-    throw new Error(`Missing value for field: ${condition.field}`);
-  }
-}
-
-function validateGroup(group) {
-  for (const item of group) {
-    if (item.and) {
-      validateGroup(item.and);
-    } else if (item.or) {
-      validateGroup(item.or);
-    } else {
-      validateCondition(item);
+  for (const key of forbiddenKeys) {
+    if (key in dsl) {
+      throw new Error(`Unsafe DSL content detected: ${key}`);
     }
   }
+
+  // Do NOT enforce AND/OR here
+  return true;
 }
 
-module.exports = function validateDSL(dsl) {
-  if (!dsl.filter || !dsl.filter.and) {
-    throw new Error('DSL must contain an AND filter');
-  }
-
-  validateGroup(dsl.filter.and);
-};
+module.exports = validateDSL;
