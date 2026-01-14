@@ -1,13 +1,21 @@
 const { DSLValidationError } = require('./validation_errors');
 
 const SUPPORTED_METRICS = [
+  // Base metrics
   'pe_ratio',
   'revenue',
   'eps',
   'revenue_growth',
   'eps_growth',
   'debt',
-  'free_cash_flow'
+  'free_cash_flow',
+  // Derived metrics
+  'peg_ratio',
+  'debt_to_fcf',
+  'eps_cagr',
+  'revenue_cagr',
+  'fcf_margin',
+  'earnings_consistency_score'
 ];
 
 function validateMetrics(node) {

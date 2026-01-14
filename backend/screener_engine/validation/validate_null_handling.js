@@ -17,23 +17,8 @@ function validateNullHandling(node) {
     return;
   }
 
-  // Leaf condition
-  const requiresNullPolicy =
-    node.trend ||
-    node.range ||
-    node.operator ||
-    node.field?.includes('growth') ||
-    node.field?.includes('cagr') ||
-    node.field?.includes('ratio');
-
-  if (requiresNullPolicy) {
-    if (!node.on_missing) {
-      throw new DSLValidationError({
-        code: 'MISSING_NULL_POLICY',
-        message: `Missing on_missing policy for '${node.field}'`
-      });
-    }
-
+  // Leaf condition - validate on_missing if present, but it's optional (defaults to 'exclude')
+  if (node.on_missing !== undefined) {
     if (!ALLOWED_POLICIES.includes(node.on_missing)) {
       throw new DSLValidationError({
         code: 'INVALID_NULL_POLICY',
