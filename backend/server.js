@@ -6,12 +6,11 @@ require("dotenv").config();
 const authRoutes = require("./auth/routes/authRoutes");
 const authMiddleware = require("./auth/middleware/auth");
 const llmParserRoutes = require("./ingestion/routes/llmParserRoutes");
-
-// ✅ NEW: Import Watchlist Routes (Points to the file we just made)
 const watchlistRoutes = require("./portfolio/routes/watchlistRoutes");
+const portfolioRoutes = require("./portfolio/routes/portfolioRoutes");
 
-// ⚠️ Optional: Portfolio Routes (Uncomment only if portfolioRoutes.js has 'module.exports = router')
- const portfolioRoutes = require("./portfolio/routes/portfolioRoutes");
+// ✅ NEW: Import Market Routes (For live Yahoo Finance data)
+const marketRoutes = require("./market/routes/marketRoutes");
 
 const app = express();
 
@@ -30,12 +29,18 @@ app.use("/api/llm", llmParserRoutes);
    USER DATA ROUTES
 ============================ */
 
-// ✅ REGISTER WATCHLIST ROUTE
-// This enables: POST http://localhost:4000/api/watchlist/add
+// Watchlist Route
 app.use("/api/watchlist", watchlistRoutes);
 
-// ⚠️ Portfolio Route (Uncomment when ready)
- app.use("/api/portfolio", portfolioRoutes);
+// Portfolio Route
+app.use("/api/portfolio", portfolioRoutes);
+
+/* ============================
+   MARKET DATA ROUTES
+============================ */
+// ✅ Register the Market Route
+// This enables: GET http://localhost:4000/api/stocks/AAPL
+app.use("/api/stocks", marketRoutes);
 
 /* ============================
    PROTECTED ROUTES

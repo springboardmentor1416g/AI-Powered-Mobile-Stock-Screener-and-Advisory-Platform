@@ -7,17 +7,16 @@ import {
   Alert,
   ActivityIndicator,
   TextInput,
+  Dimensions
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter, useRootNavigationState } from "expo-router"; // 👈 1. Add this import
+import { useRouter, useRootNavigationState } from "expo-router"; // 👈 1. Import this hook
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 
-// Import Auth Context
 import { useAuth } from "../../context/AuthContext";
 
-// Import Gesture Handler components
 import { 
   Gesture, 
   GestureDetector, 
@@ -37,15 +36,15 @@ export default function ScreenerScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [nlQuery, setNlQuery] = useState("");
 
-  // 🔒 SECURITY CHECK: If no user is logged in, kick them out
+  // 🔒 SECURITY CHECK
   useEffect(() => {
-    // 👈 3. CRITICAL FIX: Don't navigate until navigation is ready
+    // 👈 3. Critical Fix: Check if navigation is ready
     if (!rootNavigationState?.key) return;
 
     if (!user) {
       router.replace("/(auth)/login");
     }
-  }, [user, rootNavigationState?.key]); // 👈 4. Add dependency
+  }, [user, rootNavigationState?.key]); // 👈 4. Add key to dependencies
 
   // Handle Logout
   const handleLogout = () => {
@@ -64,10 +63,9 @@ export default function ScreenerScreen() {
 
   // Navigate to Portfolio (Swipe Up Action)
   const navigateToPortfolio = () => {
-    router.push("/portfolio"); // This is safe because it's triggered by a user action
+    router.push("/portfolio");
   };
 
-  // Gesture: Detect Swipe Up
   const flingUp = Gesture.Fling()
     .direction(Directions.UP)
     .onEnd(() => {
@@ -107,10 +105,8 @@ export default function ScreenerScreen() {
     }
   };
 
-  // 👈 5. Prevent rendering until navigation is ready to avoid glitches
-  if (!rootNavigationState?.key) {
-    return null; 
-  }
+  // 👈 5. Optional: Return null if navigation isn't ready to prevent rendering UI glitches
+  if (!rootNavigationState?.key) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -124,8 +120,6 @@ export default function ScreenerScreen() {
             <View style={styles.header}>
               <View style={{ width: 40 }} />
               <Text style={styles.headerTitle}>AI Stock Screener</Text>
-
-              {/* Right: LOGOUT BUTTON */}
               <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
                 <Ionicons name="power" size={24} color="#f87171" />
               </TouchableOpacity>
