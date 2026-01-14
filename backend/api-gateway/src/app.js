@@ -39,12 +39,17 @@ app.use((req, res) => {
 
 /* ---------- Global Error Handler ---------- */
 app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({
+  console.error('Error details:', err);
+  console.error('Error stack:', err.stack);
+  console.error('Error message:', err.message);
+  
+  const statusCode = err.statusCode || 500;
+  res.status(statusCode).json({
     success: false,
-    message: 'Internal Server Error',
-    error_code: 'SERVER_ERROR',
-    trace_id: req.traceId
+    message: err.message || 'Internal Server Error',
+    error_code: err.code || 'SERVER_ERROR',
+    trace_id: req.traceId,
+    ...(ENV === 'dev' && { stack: err.stack })
   });
 });
 

@@ -18,7 +18,7 @@ module.exports = {
 
   eps_cagr: {
     compute: computeEPSCAGR,
-    requires: ['eps_history']
+    requires: ['eps_series'] // Function expects eps_series
   },
 
   revenue_cagr: {

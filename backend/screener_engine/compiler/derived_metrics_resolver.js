@@ -28,7 +28,7 @@ async function resolveDerivedMetrics(candidates, derivedMetricConditions, db) {
         const baseData = await fetchBaseMetricsForDerived(
           candidate.ticker || candidate.symbol,
           metricDef.requires,
-          window,
+          window || condition.window, // Use condition's window if metricDef doesn't specify
           db
         );
 
@@ -74,7 +74,9 @@ async function fetchBaseMetricsForDerived(ticker, requiredFields, window, db) {
     'revenue': 'revenue',
     'eps': 'eps',
     'eps_history': 'eps',
-    'revenue_history': 'revenue'
+    'eps_series': 'eps', // Alias for eps_history
+    'revenue_history': 'revenue',
+    'revenue_series': 'revenue' // Alias for revenue_history
   };
 
   // Determine which table to query based on window
@@ -84,39 +86,82 @@ async function fetchBaseMetricsForDerived(ticker, requiredFields, window, db) {
     : 'fundamentals_quarterly';
   
   const periodField = window && window.type === 'years' 
-    ? 'year' 
-    : 'period_end';
+    ? 'fiscal_year' 
+    : 'fiscal_period';
 
   // Build query to fetch required fields
-  const columns = requiredFields
-    .map(field => {
-      const col = fieldToColumn[field] || field;
-      return col;
-    })
-    .filter((v, i, a) => a.indexOf(v) === i); // Unique
-
-  if (columns.length === 0) {
-    return data;
+  // Separate fields that exist in fundamentals vs metrics_normalized
+  const fundamentalsColumns = [];
+  const metricsColumns = [];
+  
+  for (const field of requiredFields) {
+    const col = fieldToColumn[field] || field;
+    // pe_ratio is in metrics_normalized, not fundamentals
+    if (field === 'pe_ratio') {
+      metricsColumns.push(col);
+    } else {
+      fundamentalsColumns.push(col);
+    }
   }
 
-  let query = `
-    SELECT ${columns.join(', ')}, ${periodField}
-    FROM ${table}
-    WHERE ticker = $1
-  `;
+  // Build query - may need to join with metrics_normalized
+  let query = '';
+  let hasFundamentals = fundamentalsColumns.length > 0;
+  let hasMetrics = metricsColumns.length > 0;
+  
+  if (hasFundamentals && hasMetrics) {
+    // Join both tables
+    query = `
+      SELECT ${fundamentalsColumns.join(', ')}, ${metricsColumns.join(', ')}, f.${periodField}
+      FROM ${table} f
+      LEFT JOIN metrics_normalized m ON f.ticker = m.ticker 
+        AND m.period::DATE = f.${periodField}::DATE
+      WHERE f.ticker = $1
+    `;
+  } else if (hasFundamentals) {
+    // Only fundamentals
+    query = `
+      SELECT ${fundamentalsColumns.join(', ')}, ${periodField}
+      FROM ${table}
+      WHERE ticker = $1
+    `;
+  } else if (hasMetrics) {
+    // Only metrics_normalized
+    query = `
+      SELECT ${metricsColumns.join(', ')}, period as ${periodField}
+      FROM metrics_normalized
+      WHERE ticker = $1
+    `;
+  } else {
+    return data;
+  }
 
   const params = [ticker];
 
   // Add window constraint if specified
   if (window && window.length) {
-    query += ` AND ${periodField} >= (
-      SELECT MAX(${periodField}) - INTERVAL '${window.length} ${window.type === 'quarters' ? 'months' : 'years'}'
-      FROM ${table}
-      WHERE ticker = $1
-    )`;
+    const tableAlias = hasFundamentals && hasMetrics ? 'f' : '';
+    const periodRef = tableAlias ? `${tableAlias}.${periodField}` : periodField;
+    
+    if (window.type === 'quarters') {
+      // For quarters, subtract months
+      query += ` AND ${periodRef} >= (
+        SELECT MAX(${periodField}) - INTERVAL '${window.length * 3} months'
+        FROM ${table}
+        WHERE ticker = $1
+      )`;
+    } else {
+      // For years, subtract years (fiscal_year is INTEGER)
+      query += ` AND ${periodRef} >= (
+        SELECT MAX(${periodField}) - ${window.length}
+        FROM ${table}
+        WHERE ticker = $1
+      )`;
+    }
   }
 
-  query += ` ORDER BY ${periodField} DESC LIMIT ${window && window.length ? window.length : 10}`;
+  const periodRef = (hasFundamentals && hasMetrics ? 'f.' : '') + periodField;
+  query += ` ORDER BY ${periodRef} DESC LIMIT ${window && window.length ? window.length : 10}`;
 
   let result = await db.query(query, params);
   
@@ -126,7 +171,7 @@ async function fetchBaseMetricsForDerived(ticker, requiredFields, window, db) {
     if (!hasFCF) {
       // Try cashflow_statements table
       const cashflowQuery = `
-        SELECT free_cash_flow, ${periodField === 'year' ? 'EXTRACT(YEAR FROM period_end)::INTEGER as year' : 'period_end'}
+        SELECT free_cash_flow, ${periodField === 'fiscal_year' ? 'EXTRACT(YEAR FROM period_end)::INTEGER as fiscal_year' : 'period_end as fiscal_period'}
         FROM cashflow_statements
         WHERE ticker = $1
         ORDER BY period_end DESC
@@ -137,18 +182,18 @@ async function fetchBaseMetricsForDerived(ticker, requiredFields, window, db) {
         // Merge cashflow data with existing rows or create new ones
         for (const cfRow of cashflowResult.rows) {
           const matchingRow = result.rows.find(r => {
-            if (periodField === 'year') {
-              return r.year === cfRow.year;
+            if (periodField === 'fiscal_year') {
+              return r.fiscal_year === cfRow.fiscal_year;
             }
-            return r.period_end && cfRow.period_end && 
-                   r.period_end.getTime() === cfRow.period_end.getTime();
+            return r.fiscal_period && cfRow.fiscal_period && 
+                   r.fiscal_period.getTime() === cfRow.fiscal_period.getTime();
           });
           if (matchingRow) {
             matchingRow.free_cash_flow = cfRow.free_cash_flow;
           } else {
             result.rows.push({ 
               free_cash_flow: cfRow.free_cash_flow, 
-              [periodField]: cfRow[periodField] 
+              [periodField]: cfRow[periodField === 'fiscal_year' ? 'fiscal_year' : 'fiscal_period'] 
             });
           }
         }
@@ -157,7 +202,8 @@ async function fetchBaseMetricsForDerived(ticker, requiredFields, window, db) {
   }
   
   if (result.rows.length === 0) {
-    throw new DerivedMetricError('NO_DATA', 'No data available for derived metric computation');
+    // Return empty data object - let the metric computation handle the error
+    return {};
   }
 
   // Transform results into format expected by derived metric functions
@@ -166,11 +212,34 @@ async function fetchBaseMetricsForDerived(ticker, requiredFields, window, db) {
       // Time series field
       const baseField = field.replace('_history', '').replace('_series', '');
       const col = fieldToColumn[baseField] || baseField;
-      data[field] = result.rows.map(row => parseFloat(row[col]) || 0);
+      // Handle pe_ratio from metrics_normalized (may be null)
+      const seriesData = result.rows.map(row => {
+        if (baseField === 'pe_ratio') {
+          return parseFloat(row['pe_ratio']) || null;
+        }
+        return parseFloat(row[col]) || 0;
+      });
+      data[field] = seriesData;
+      // Create aliases for compatibility (eps_history <-> eps_series)
+      if (field === 'eps_history') {
+        data['eps_series'] = seriesData;
+      } else if (field === 'eps_series') {
+        data['eps_history'] = seriesData;
+      }
+      if (field === 'revenue_history') {
+        data['revenue_series'] = seriesData;
+      } else if (field === 'revenue_series') {
+        data['revenue_history'] = seriesData;
+      }
     } else {
       // Single value field - use latest
       const col = fieldToColumn[field] || field;
-      data[field] = parseFloat(result.rows[0][col]) || 0;
+      // Handle pe_ratio from metrics_normalized (may be null)
+      if (field === 'pe_ratio') {
+        data[field] = parseFloat(result.rows[0]?.['pe_ratio']) || null;
+      } else {
+        data[field] = parseFloat(result.rows[0]?.[col]) || 0;
+      }
     }
   }
 

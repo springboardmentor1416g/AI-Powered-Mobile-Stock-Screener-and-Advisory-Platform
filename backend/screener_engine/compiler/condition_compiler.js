@@ -109,7 +109,7 @@ function compileTrendCondition(field, trend, window, paramIndex) {
   const { type, length } = window;
   const fieldRef = fieldMap[field] || `financials.${field}`;
   const table = type === 'quarters' ? 'fundamentals_quarterly' : 'fundamentals_annual';
-  const periodField = type === 'quarters' ? 'period_end' : 'year';
+  const periodField = type === 'quarters' ? 'fiscal_period' : 'fiscal_year';
   
   // For trend, we need to check ordering of values
   // This is complex SQL - we'll use window functions
@@ -123,11 +123,11 @@ function compileTrendCondition(field, trend, window, paramIndex) {
   return {
     sql: `EXISTS (
       SELECT 1 FROM ${table} f
-      WHERE f.ticker = stocks.symbol
+      WHERE f.ticker = stocks.ticker
       AND f.${periodField} >= (
         SELECT MAX(${periodField}) - INTERVAL '${length} ${type === 'quarters' ? 'months' : 'years'}'
         FROM ${table}
-        WHERE ticker = stocks.symbol
+        WHERE ticker = stocks.ticker
       )
       GROUP BY f.ticker
       HAVING COUNT(*) >= ${length}
@@ -146,7 +146,7 @@ function compileWindowCondition(field, operator, value, window, paramIndex) {
   const { type, length, aggregation = 'avg' } = window;
   const fieldRef = fieldMap[field] || `financials.${field}`;
   const table = type === 'quarters' ? 'fundamentals_quarterly' : 'fundamentals_annual';
-  const periodField = type === 'quarters' ? 'period_end' : 'year';
+  const periodField = type === 'quarters' ? 'fiscal_period' : 'fiscal_year';
   
   const aggFunc = {
     'avg': 'AVG',
@@ -164,11 +164,13 @@ function compileWindowCondition(field, operator, value, window, paramIndex) {
           1.0 / NULLIF(COUNT(DISTINCT ${periodField}) - 1, 0)
         ) - 1
         FROM ${table}
-        WHERE ticker = stocks.symbol
+        WHERE ticker = stocks.ticker
         AND ${periodField} >= (
-          SELECT MAX(${periodField}) - INTERVAL '${length} ${type === 'quarters' ? 'months' : 'years'}'
+          SELECT ${type === 'quarters' 
+            ? `MAX(${periodField}) - INTERVAL '${length * 3} months'`
+            : `MAX(${periodField}) - ${length}`}
           FROM ${table}
-          WHERE ticker = stocks.symbol
+          WHERE ticker = stocks.ticker
         )
         AND ${fieldRef} IS NOT NULL
         GROUP BY ticker
@@ -189,7 +191,7 @@ function compileWindowCondition(field, operator, value, window, paramIndex) {
       AND ${periodField} >= (
         SELECT MAX(${periodField}) - INTERVAL '${length} ${type === 'quarters' ? 'months' : 'years'}'
         FROM ${table}
-        WHERE ticker = stocks.symbol
+        WHERE ticker = stocks.ticker
       )
       AND ${fieldRef} IS NOT NULL
       GROUP BY ticker

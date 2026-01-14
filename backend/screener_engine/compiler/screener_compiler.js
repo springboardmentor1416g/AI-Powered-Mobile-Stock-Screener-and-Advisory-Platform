@@ -50,8 +50,8 @@ module.exports = function compileDSL(dsl) {
   sql += `
     FROM companies stocks
     LEFT JOIN fundamentals_quarterly financials ON stocks.ticker = financials.ticker
-      AND financials.period_end = (
-        SELECT MAX(period_end) 
+      AND financials.fiscal_period = (
+        SELECT MAX(fiscal_period) 
         FROM fundamentals_quarterly 
         WHERE ticker = stocks.ticker
       )
