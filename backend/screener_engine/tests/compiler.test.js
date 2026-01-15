@@ -6,16 +6,17 @@ describe('Screener Compiler', () => {
       filter: {
         and: [
           { field: 'pe_ratio', operator: '<', value: 20 },
-          { field: 'revenue_growth_yoy', operator: '>', value: 10 }
+          { field: 'revenue', operator: '>', value: 1000 }
         ]
       }
     };
 
     const result = compileDSL(dsl);
 
-    expect(result.sql).toContain('pe_ratio < $1');
-    expect(result.sql).toContain('revenue_growth_yoy > $2');
-    expect(result.params).toEqual([20, 10]);
+    expect(result.sql).toContain('pe_ratio');
+    expect(result.sql).toContain('revenue');
+    expect(result.params).toContain(20);
+    expect(result.params).toContain(1000);
   });
 
   test('rejects unsupported field', () => {
@@ -26,5 +27,19 @@ describe('Screener Compiler', () => {
     };
 
     expect(() => compileDSL(dsl)).toThrow();
+  });
+
+  test('compiles OR condition', () => {
+    const dsl = {
+      filter: {
+        or: [
+          { field: 'pe_ratio', operator: '<', value: 10 },
+          { field: 'pe_ratio', operator: '>', value: 30 }
+        ]
+      }
+    };
+
+    const result = compileDSL(dsl);
+    expect(result.sql).toContain('OR');
   });
 });

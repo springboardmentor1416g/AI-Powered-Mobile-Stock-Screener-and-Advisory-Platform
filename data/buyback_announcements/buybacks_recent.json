@@ -1,0 +1,38 @@
+[
+  {
+    "ticker": "AAPL",
+    "announcement_date": "2025-01-10",
+    "effective_date": "2025-01-15",
+    "authorization_date": "2025-01-05",
+    "buyback_type": "open_market",
+    "amount": 50000000,
+    "expiration_date": "2026-01-15",
+    "status": "active",
+    "source": "SEC_FILING",
+    "notes": "Recent buyback authorization - Q1 2025"
+  },
+  {
+    "ticker": "MSFT",
+    "announcement_date": "2025-01-08",
+    "effective_date": "2025-01-14",
+    "authorization_date": "2025-01-03",
+    "buyback_type": "accelerated_share_repurchase",
+    "amount": 100000000,
+    "expiration_date": "2026-01-14",
+    "status": "active",
+    "source": "PRESS_RELEASE",
+    "notes": "Accelerated repurchase tranche - cloud growth momentum"
+  },
+  {
+    "ticker": "NVDA",
+    "announcement_date": "2024-12-20",
+    "effective_date": "2024-12-27",
+    "authorization_date": "2024-12-15",
+    "buyback_type": "open_market",
+    "amount": 60000000,
+    "expiration_date": "2025-12-27",
+    "status": "active",
+    "source": "SEC_FILING",
+    "notes": "GPU demand supporting capital return program"
+  }
+]

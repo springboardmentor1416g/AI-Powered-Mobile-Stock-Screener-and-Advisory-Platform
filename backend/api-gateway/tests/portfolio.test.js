@@ -7,7 +7,8 @@ jest.mock('../src/auth/auth.middleware', () => {
   };
 });
 
-jest.mock('../src/services/portfolio.service');
+// portfolioService mock is already set up in tests/setup.js
+// Do NOT mock again here - it would override the proper mock
 const portfolioService = require('../src/services/portfolio.service');
 const app = require('../src/app');
 
@@ -17,6 +18,12 @@ describe('Portfolio Management API', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Initialize all service methods as jest mocks
+    portfolioService.addToPortfolio = jest.fn();
+    portfolioService.getPortfolio = jest.fn();
+    portfolioService.getPortfolioEntry = jest.fn();
+    portfolioService.updatePortfolioEntry = jest.fn();
+    portfolioService.removeFromPortfolio = jest.fn();
   });
 
   describe('POST /api/v1/portfolio - Add Stock to Portfolio', () => {

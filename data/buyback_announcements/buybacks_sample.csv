@@ -1,0 +1,26 @@
+ticker,announcement_date,effective_date,authorization_date,buyback_type,amount,expiration_date,status,source,notes
+AAPL,2024-10-15,2024-10-20,2024-10-01,open_market,110000000,2025-10-15,active,SEC_FILING,Apple Q4 2024 buyback authorization
+MSFT,2024-09-30,2024-10-05,2024-09-15,accelerated_share_repurchase,100000000,2025-09-30,active,PRESS_RELEASE,Microsoft ASR program Q4 2024
+GOOGL,2024-08-20,2024-08-25,2024-08-01,open_market,75000000,2025-08-20,active,SEC_FILING,Alphabet 10 billion buyback tranche
+NVDA,2024-07-10,2024-07-15,2024-06-15,open_market,80000000,2025-07-10,active,SEC_FILING,NVIDIA stock repurchase program
+TSLA,2024-06-30,2024-07-05,2024-06-01,open_market,50000000,2025-06-30,active,NEWS,Tesla investor authorization
+META,2024-05-20,2024-05-25,2024-05-01,open_market,65000000,2025-05-20,active,SEC_FILING,Meta 60 billion buyback program
+AMZN,2024-04-15,2024-04-20,2024-04-01,open_market,70000000,2025-04-15,completed,SEC_FILING,Amazon annual repurchase
+NFLX,2024-12-01,2024-12-05,2024-11-15,accelerated_share_repurchase,55000000,2025-12-01,active,PRESS_RELEASE,Netflix ASR acceleration
+AMD,2024-11-20,2024-11-25,2024-11-01,open_market,45000000,2025-11-20,active,SEC_FILING,AMD buyback authorization
+INTC,2024-10-30,2024-11-05,2024-10-15,open_market,42000000,2025-10-30,completed,SEC_FILING,Intel capital allocation
+CRM,2024-09-10,2024-09-15,2024-08-20,open_market,60000000,2025-09-10,active,SEC_FILING,Salesforce repurchase
+ADBE,2024-08-05,2024-08-10,2024-07-20,open_market,58000000,2025-08-05,active,SEC_FILING,Adobe buyback program
+PYPL,2024-07-01,2024-07-05,2024-06-15,open_market,40000000,2025-07-01,suspended,NEWS,PayPal capital allocation
+NOW,2024-06-15,2024-06-20,2024-05-30,open_market,52000000,2025-06-15,active,SEC_FILING,ServiceNow buyback
+META,2024-08-14,2024-08-20,2024-08-10,accelerated_share_repurchase,50000000,USD,150000,300.00,350.00,2024-08-20,2025-02-20,active,PRESS_RELEASE,https://investor.fb.com,ASR tranche completion
+NVDA,2024-07-22,,2024-07-18,open_market,60000000,USD,,900.00,1000.00,2024-07-22,2025-07-22,active,SEC_FILING,,GPU maker buyback program
+TSLA,2024-06-10,2024-06-15,2024-06-05,open_market,30000000,USD,50000,200.00,250.00,2024-06-15,2025-06-15,active,NEWS,,Ongoing share repurchase
+INTC,2024-05-20,,2024-05-15,open_market,25000000,USD,,30.00,45.00,2024-05-20,2025-05-20,active,SEC_FILING,,Semiconductor company buyback
+AMD,2024-04-15,2024-04-20,2024-04-10,accelerated_share_repurchase,35000000,USD,300000,140.00,160.00,2024-04-20,2025-10-20,active,PRESS_RELEASE,,ASR agreement signed
+NFLX,2024-03-12,,2024-03-08,open_market,20000000,USD,,400.00,500.00,2024-03-12,2025-03-12,active,SEC_FILING,,Streaming service buyback
+JPM,2024-02-28,2024-03-05,2024-02-25,open_market,30000000,USD,,190.00,220.00,2024-03-05,2025-03-05,active,NEWS,,Banking sector share repurchase
+BAC,2024-01-30,,2024-01-25,open_market,20000000,USD,,35.00,45.00,2024-01-30,2025-01-30,active,SEC_FILING,,Bank of America buyback program
+GS,2023-12-20,2023-12-27,2023-12-15,open_market,15000000,USD,,350.00,400.00,2023-12-27,2024-12-27,completed,SEC_FILING,,Goldman Sachs completed program
+WFC,2023-11-15,,2023-11-10,open_market,25000000,USD,,35.00,50.00,2023-11-15,2024-11-15,completed,NEWS,,Wells Fargo repurchase expired
+C,2023-10-10,2023-10-15,2023-10-05,accelerated_share_repurchase,40000000,USD,500000,50.00,65.00,2023-10-15,2024-04-15,completed,PRESS_RELEASE,,Citigroup ASR program completed

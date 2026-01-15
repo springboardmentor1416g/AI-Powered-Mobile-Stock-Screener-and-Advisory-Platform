@@ -189,13 +189,13 @@ async function run() {
     const { getIssues } = require('../services/data_validation/validate_data');
 
     const timestamp = new Date().toISOString().slice(0, 10);
-    const issues = getIssues();
+const issues = getIssues();
 
-    writeCSVReport(issues, timestamp);
-    writeMarkdownReport(issues, timestamp);
+writeCSVReport(issues, timestamp);
+writeMarkdownReport(issues, timestamp);
+
 
   await pool.end();
-writeReports();
 console.log('Fundamentals ingestion completed successfully');
 
   logValidation('Fundamentals validation + ingestion completed successfully', 'INFO');
