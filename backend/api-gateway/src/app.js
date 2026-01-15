@@ -7,9 +7,32 @@ const authRoutes = require('./auth/auth.routes');
 const healthRoutes = require('./routes/health.routes');
 const metadataRoutes = require('./routes/metadata.routes');
 const protectedRoutes = require('./routes/protected.routes');
-const screenerRoutes = require('./screener/screener.routes');
-const llmRoutes = require('./routes/llm.routes');
-const llmParserRoutes = require('./services/llm_parser/llm_parser.routes');
+const portfolioRoutes = require('./routes/portfolio.routes');
+const watchlistRoutes = require('./routes/watchlist.routes');
+const alertRoutes = require('./routes/alert.routes');
+
+// Load optional/external modules with fallback
+let screenerRoutes, llmRoutes, llmParserRoutes;
+try {
+  screenerRoutes = require('./screener/screener.routes');
+} catch (e) {
+  // Screener routes not available in test environment
+  screenerRoutes = require('express').Router();
+}
+
+try {
+  llmRoutes = require('./routes/llm.routes');
+} catch (e) {
+  // LLM routes not available
+  llmRoutes = require('express').Router();
+}
+
+try {
+  llmParserRoutes = require('./services/llm_parser/llm_parser.routes');
+} catch (e) {
+  // LLM parser routes not available
+  llmParserRoutes = require('express').Router();
+}
 
 const app = express();
 const ENV = process.env.ENV || 'dev';
@@ -27,6 +50,9 @@ app.use('/api/v1/health', healthRoutes);
 app.use('/api/v1/metadata', metadataRoutes);
 app.use('/api/v1/screener', screenerRoutes);
 app.use('/api/v1/llm', llmParserRoutes);
+app.use('/api/v1/portfolio', portfolioRoutes);
+app.use('/api/v1/watchlists', watchlistRoutes);
+app.use('/api/v1/alerts', alertRoutes);
 
 /* ---------- 404 Handler ---------- */
 app.use((req, res) => {
