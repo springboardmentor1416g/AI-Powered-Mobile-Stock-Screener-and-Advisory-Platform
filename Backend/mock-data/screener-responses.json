@@ -1,0 +1,42 @@
+{
+  "success_large": {
+    "status": "success",
+    "stocks": [
+      { "symbol": "AAPL", "name": "Apple Inc", "price": 195.71, "change_percent": 0.87, "pe_ratio": 31.2, "market_cap": 3045000000000, "volume": 56789012, "sector": "Technology" },
+      { "symbol": "MSFT", "name": "Microsoft Corp", "price": 378.91, "change_percent": 2.34, "pe_ratio": 17.8, "market_cap": 2819000000000, "volume": 23456789, "sector": "Technology" },
+      { "symbol": "NVDA", "name": "NVIDIA Corp", "price": 910.23, "change_percent": 4.89, "pe_ratio": 72.3, "market_cap": 2250000000000, "volume": 67234567, "sector": "Semiconductors" },
+      { "symbol": "GOOGL", "name": "Alphabet Inc", "price": 140.93, "change_percent": 1.45, "pe_ratio": 26.8, "market_cap": 1750000000000, "volume": 23456789, "sector": "Technology" },
+      { "symbol": "AMZN", "name": "Amazon.com Inc", "price": 172.44, "change_percent": 0.94, "pe_ratio": 45.1, "market_cap": 1790000000000, "volume": 48765432, "sector": "E-Commerce" },
+      { "symbol": "META", "name": "Meta Platforms Inc", "price": 487.62, "change_percent": 3.12, "pe_ratio": 29.8, "market_cap": 1240000000000, "volume": 31234567, "sector": "Technology" },
+
+      { "symbol": "TSLA", "name": "Tesla Inc", "price": 245.32, "change_percent": -1.21, "pe_ratio": 58.4, "market_cap": 780000000000, "volume": 91234567, "sector": "Automotive" },
+      { "symbol": "JPM", "name": "JPMorgan Chase", "price": 189.23, "change_percent": 0.42, "pe_ratio": 12.8, "market_cap": 560000000000, "volume": 14321098, "sector": "Banking" },
+      { "symbol": "XOM", "name": "Exxon Mobil", "price": 104.29, "change_percent": 1.12, "pe_ratio": 13.1, "market_cap": 412000000000, "volume": 30234567, "sector": "Energy" },
+      { "symbol": "JNJ", "name": "Johnson & Johnson", "price": 165.72, "change_percent": 0.31, "pe_ratio": 16.4, "market_cap": 435000000000, "volume": 9234567, "sector": "Healthcare" },
+      { "symbol": "WMT", "name": "Walmart Inc", "price": 159.84, "change_percent": 0.65, "pe_ratio": 28.1, "market_cap": 430000000000, "volume": 18345678, "sector": "Retail" },
+
+      { "symbol": "PG", "name": "Procter & Gamble", "price": 153.42, "change_percent": 0.18, "pe_ratio": 24.7, "market_cap": 360000000000, "volume": 9345678, "sector": "Consumer Goods" },
+      { "symbol": "KO", "name": "Coca-Cola Co", "price": 61.82, "change_percent": 0.22, "pe_ratio": 24.6, "market_cap": 266000000000, "volume": 13245678, "sector": "Consumer Goods" },
+      { "symbol": "PEP", "name": "PepsiCo Inc", "price": 173.64, "change_percent": 0.55, "pe_ratio": 25.3, "market_cap": 239000000000, "volume": 8432109, "sector": "Consumer Goods" },
+      { "symbol": "CVX", "name": "Chevron Corp", "price": 158.74, "change_percent": 0.74, "pe_ratio": 14.5, "market_cap": 296000000000, "volume": 14345678, "sector": "Energy" },
+
+      { "symbol": "ORCL", "name": "Oracle Corp", "price": 128.65, "change_percent": 1.02, "pe_ratio": 32.1, "market_cap": 350000000000, "volume": 21456789, "sector": "Technology" },
+      { "symbol": "IBM", "name": "IBM Corp", "price": 173.21, "change_percent": 0.48, "pe_ratio": 19.8, "market_cap": 158000000000, "volume": 7345678, "sector": "Technology" },
+      { "symbol": "ADBE", "name": "Adobe Inc", "price": 512.87, "change_percent": 1.67, "pe_ratio": 44.2, "market_cap": 240000000000, "volume": 6543210, "sector": "Technology" },
+
+      { "symbol": "BA", "name": "Boeing Co", "price": 183.26, "change_percent": -1.64, "pe_ratio": 54.7, "market_cap": 112000000000, "volume": 12456789, "sector": "Aerospace" },
+      { "symbol": "CAT", "name": "Caterpillar Inc", "price": 332.11, "change_percent": 1.09, "pe_ratio": 19.2, "market_cap": 172000000000, "volume": 6345678, "sector": "Industrial" },
+      { "symbol": "GE", "name": "General Electric", "price": 131.84, "change_percent": 0.92, "pe_ratio": 21.5, "market_cap": 145000000000, "volume": 15432109, "sector": "Industrial" }
+    ]
+  },
+
+  "empty_result": {
+    "status": "success",
+    "stocks": []
+  },
+
+  "error_response": {
+    "status": "error",
+    "message": "Invalid or unsupported query syntax"
+  }
+}
