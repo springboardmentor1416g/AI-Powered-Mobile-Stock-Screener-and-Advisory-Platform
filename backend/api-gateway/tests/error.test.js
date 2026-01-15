@@ -11,3 +11,10 @@ describe('Global error handling', () => {
     expect(res.body).toHaveProperty('error_code');
   });
 });
+
+// Close any open connections after tests
+afterAll(async () => {
+  // Allow any pending operations to complete
+  await new Promise(resolve => setTimeout(resolve, 100));
+});
+

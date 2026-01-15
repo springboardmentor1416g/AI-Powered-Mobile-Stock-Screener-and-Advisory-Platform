@@ -8,3 +8,10 @@ describe('GET /api/v1/metadata/stocks', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 });
+
+// Close any open connections after tests
+afterAll(async () => {
+  // Allow any pending operations to complete
+  await new Promise(resolve => setTimeout(resolve, 100));
+});
+

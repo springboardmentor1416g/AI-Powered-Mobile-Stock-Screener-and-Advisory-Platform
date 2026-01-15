@@ -23,5 +23,5 @@ jobs:
         working-directory: backend/api-gateway
 
       - name: Run tests
-        run: npm test
+        run: npm run test:ci
         working-directory: backend/api-gateway

@@ -8,3 +8,10 @@ describe('GET /api/v1/health', () => {
     expect(res.body.status).toBe('UP');
   });
 });
+
+// Close any open connections after tests
+afterAll(async () => {
+  // Allow any pending operations to complete
+  await new Promise(resolve => setTimeout(resolve, 100));
+});
+
