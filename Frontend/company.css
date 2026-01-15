@@ -1,0 +1,133 @@
+/* ================================
+   GLOBAL
+================================ */
+body {
+  margin: 0;
+  font-family: 'Inter', Arial, sans-serif;
+  background: #0b0f1a;
+  color: #e5e7eb;
+}
+
+/* ================================
+   HEADER
+================================ */
+.header {
+  background: #111827;
+  color: #fff;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.header button {
+  background: rgba(255,255,255,0.08);
+  border: none;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.header button:hover {
+  background: rgba(255,255,255,0.16);
+}
+
+/* ================================
+   STATES
+================================ */
+.loading,
+.error {
+  padding: 40px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.error {
+  color: #ef4444;
+}
+
+/* ================================
+   CONTENT GRID
+================================ */
+#content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  padding: 24px;
+}
+
+/* ================================
+   CARD
+================================ */
+.card {
+  background: linear-gradient(180deg, #121826, #0b0f1a);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+.card h3 {
+  margin-top: 0;
+  margin-bottom: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #f9fafb;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 6px;
+}
+
+/* ================================
+   TEXT
+================================ */
+.card p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.card b {
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* ================================
+   TABLE
+================================ */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+td {
+  padding: 8px 6px;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ================================
+   ACTION BUTTON
+================================ */
+#watchlistBtn {
+  margin-top: 10px;
+  width: 100%;
+  background: #22d3ee;
+  color: #020617;
+  font-weight: 600;
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+#watchlistBtn:hover {
+  background: #06b6d4;
+}
+
+/* ================================
+   CHART CANVAS
+================================ */
+canvas {
+  margin-top: 10px;
+}
