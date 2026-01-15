@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node src/server.js",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "test:ci": "jest --runInBand --ci --coverage"
   },
   "keywords": [
     "api-gateway",
