@@ -33,6 +33,8 @@ export default function ScreenerQueryScreen({ navigation }) {
 
       navigation.navigate('Results', {
         results: response.results,
+        query: query,
+        timestamp: response.timestamp || new Date().toISOString(),
       });
     } catch (err) {
       console.error('Screener Error:', err);
