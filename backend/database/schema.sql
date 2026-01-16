@@ -239,11 +239,86 @@ CREATE TABLE IF NOT EXISTS watchlist_alerts (
     user_id UUID NOT NULL,
     ticker VARCHAR(20) NOT NULL,
     alert_rule JSONB NOT NULL, -- structured rule DSL for alerts
+    alert_type VARCHAR(50) DEFAULT 'price', -- 'price', 'fundamental', 'event'
+    evaluation_frequency VARCHAR(50) DEFAULT 'daily', -- 'realtime', 'hourly', 'daily'
     active BOOLEAN DEFAULT TRUE,
+    status VARCHAR(20) DEFAULT 'active', -- 'active', 'paused', 'triggered'
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 COMMENT ON TABLE watchlist_alerts IS 'User-defined alert rules stored as JSONB';
+
+-- 15) Watchlists (user watchlist collections)
+CREATE TABLE IF NOT EXISTS watchlists (
+    id SERIAL PRIMARY KEY,
+    user_id UUID NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+COMMENT ON TABLE watchlists IS 'User-created watchlist collections';
+
+ALTER TABLE IF EXISTS watchlists
+  ADD CONSTRAINT IF NOT EXISTS fk_watchlists_user
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+-- 16) Watchlist items (stocks in a watchlist)
+CREATE TABLE IF NOT EXISTS watchlist_items (
+    id SERIAL PRIMARY KEY,
+    watchlist_id INT NOT NULL,
+    ticker VARCHAR(20) NOT NULL,
+    notes TEXT,
+    added_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+COMMENT ON TABLE watchlist_items IS 'Individual stocks in a watchlist';
+
+ALTER TABLE IF EXISTS watchlist_items
+  ADD CONSTRAINT IF NOT EXISTS fk_watchlist_items_watchlist
+  FOREIGN KEY (watchlist_id) REFERENCES watchlists(id) ON DELETE CASCADE;
+
+-- 17) Alert trigger log (when alerts are triggered)
+CREATE TABLE IF NOT EXISTS alert_triggers (
+    id SERIAL PRIMARY KEY,
+    alert_id INT NOT NULL,
+    user_id UUID NOT NULL,
+    ticker VARCHAR(20) NOT NULL,
+    triggered_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    trigger_value JSONB, -- the actual values that triggered the alert
+    notification_sent BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+COMMENT ON TABLE alert_triggers IS 'Log of when alerts are triggered';
+
+ALTER TABLE IF EXISTS alert_triggers
+  ADD CONSTRAINT IF NOT EXISTS fk_alert_triggers_alert
+  FOREIGN KEY (alert_id) REFERENCES watchlist_alerts(id) ON DELETE CASCADE;
+
+ALTER TABLE IF EXISTS alert_triggers
+  ADD CONSTRAINT IF NOT EXISTS fk_alert_triggers_user
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+-- 18) Notifications (user notifications from triggered alerts)
+CREATE TABLE IF NOT EXISTS notifications (
+    id SERIAL PRIMARY KEY,
+    user_id UUID NOT NULL,
+    trigger_id INT,
+    title VARCHAR(255) NOT NULL,
+    message TEXT,
+    alert_type VARCHAR(50), -- 'price', 'fundamental', 'earnings', 'buyback'
+    ticker VARCHAR(20),
+    status VARCHAR(20) DEFAULT 'unread', -- unread, read, dismissed
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    read_at TIMESTAMP WITH TIME ZONE
+);
+COMMENT ON TABLE notifications IS 'User notifications from alert triggers';
+
+ALTER TABLE IF EXISTS notifications
+  ADD CONSTRAINT IF NOT EXISTS fk_notifications_user
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE IF EXISTS notifications
+  ADD CONSTRAINT IF NOT EXISTS fk_notifications_trigger
+  FOREIGN KEY (trigger_id) REFERENCES alert_triggers(id) ON DELETE SET NULL;
 
 -- 15) Data ingestion log (source reliability)
 CREATE TABLE IF NOT EXISTS ingestion_log (
@@ -257,7 +332,7 @@ CREATE TABLE IF NOT EXISTS ingestion_log (
 );
 COMMENT ON TABLE ingestion_log IS 'Records ingestion status for monitoring and debugging';
 
--- 16) Materialized view example: latest fundamentals per ticker (for fast joins)
+-- 19) Materialized view example: latest fundamentals per ticker (for fast joins)
 CREATE MATERIALIZED VIEW IF NOT EXISTS mv_latest_fundamentals AS
 SELECT fq.ticker,
        fq.period_end,
@@ -272,7 +347,7 @@ JOIN (
     SELECT ticker, max(period_end) as max_period_end FROM fundamentals_quarterly GROUP BY ticker
 ) latest ON fq.ticker = latest.ticker AND fq.period_end = latest.max_period_end;
 
--- 17) Indexes for performance
+-- 20) Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_price_history_ticker_time_desc ON price_history (ticker, time DESC);
 CREATE INDEX IF NOT EXISTS idx_price_history_time ON price_history (time);
 
@@ -293,16 +368,23 @@ CREATE INDEX IF NOT EXISTS idx_symbols_ticker_exchange ON symbols (ticker, excha
 
 CREATE INDEX IF NOT EXISTS idx_user_portfolio_user ON user_portfolio (user_id);
 CREATE INDEX IF NOT EXISTS idx_watchlist_alerts_user ON watchlist_alerts (user_id);
+CREATE INDEX IF NOT EXISTS idx_watchlists_user ON watchlists (user_id);
+CREATE INDEX IF NOT EXISTS idx_watchlist_items_watchlist ON watchlist_items (watchlist_id);
+CREATE INDEX IF NOT EXISTS idx_watchlist_items_ticker ON watchlist_items (ticker);
+CREATE INDEX IF NOT EXISTS idx_alert_triggers_user ON alert_triggers (user_id);
+CREATE INDEX IF NOT EXISTS idx_alert_triggers_ticker ON alert_triggers (ticker);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications (user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_status ON notifications (user_id, status);
 
 CREATE INDEX IF NOT EXISTS idx_ingestion_log_source ON ingestion_log (source);
 
--- 18) Grants / Permissions (example - adjust per deployment)
+-- 21) Grants / Permissions (example - adjust per deployment)
 -- CREATE ROLE analytics_readonly;
 -- GRANT CONNECT ON DATABASE stock_screener TO analytics_readonly;
 -- GRANT USAGE ON SCHEMA public TO analytics_readonly;
 -- GRANT SELECT ON ALL TABLES IN SCHEMA public TO analytics_readonly;
 
--- 19) Routine: refresh materialized views (example)
+-- 22) Routine: refresh materialized views (example)
 CREATE OR REPLACE FUNCTION refresh_materialized_views() RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
   REFRESH MATERIALIZED VIEW CONCURRENTLY mv_latest_fundamentals;

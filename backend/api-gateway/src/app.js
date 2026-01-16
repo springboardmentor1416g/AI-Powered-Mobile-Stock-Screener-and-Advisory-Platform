@@ -10,6 +10,7 @@ const protectedRoutes = require('./routes/protected.routes');
 const portfolioRoutes = require('./routes/portfolio.routes');
 const watchlistRoutes = require('./routes/watchlist.routes');
 const alertRoutes = require('./routes/alert.routes');
+const notificationRoutes = require('./routes/notification.routes');
 
 // Load optional/external modules with fallback
 let screenerRoutes, llmRoutes, llmParserRoutes;
@@ -38,7 +39,12 @@ const app = express();
 const ENV = process.env.ENV || 'dev';
 
 /* ---------- Middleware ---------- */
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(requestLogger);
@@ -53,6 +59,7 @@ app.use('/api/v1/llm', llmParserRoutes);
 app.use('/api/v1/portfolio', portfolioRoutes);
 app.use('/api/v1/watchlists', watchlistRoutes);
 app.use('/api/v1/alerts', alertRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 /* ---------- 404 Handler ---------- */
 app.use((req, res) => {

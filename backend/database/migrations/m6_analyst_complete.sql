@@ -1,11 +1,3 @@
--- Migration: M6 - Complete Setup (Base Schema + Analyst Data)
--- Purpose: Create all necessary tables for M6 implementation
--- Date: 2025-01-15
--- Status: Production-ready
-
--- ============================================================================
--- PREREQUISITE: Ensure companies table exists (if not run base schema first)
--- ============================================================================
 CREATE TABLE IF NOT EXISTS companies (
     company_id SERIAL PRIMARY KEY,
     ticker VARCHAR(20) UNIQUE NOT NULL,

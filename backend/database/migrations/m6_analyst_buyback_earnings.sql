@@ -1,12 +1,3 @@
--- Migration: M6 - Analyst Estimates, Price Targets, Buyback Announcements & Earnings Calendar
--- Purpose: Enhanced ingestion tables with improved structure, validation, and normalization
--- Date: 2025-01-15
--- Status: Ready for production
-
--- ============================================================================
--- TABLE: analyst_price_targets
--- PURPOSE: Store analyst price target estimates with consensus data
--- ============================================================================
 CREATE TABLE IF NOT EXISTS analyst_price_targets (
     id SERIAL PRIMARY KEY,
     ticker VARCHAR(20) NOT NULL,
