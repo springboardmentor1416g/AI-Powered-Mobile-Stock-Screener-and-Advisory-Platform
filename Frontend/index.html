@@ -9,33 +9,46 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+
 </head>
 <body>
     <div class="app-shell">
         <!-- Header Section -->
-        <header class="header">
-            <div class="brand">
-                <div class="logo-sq" aria-hidden="true"></div>
-                <span>Screener<b>AI</b></span>
-                <span class="version-badge">Pro</span>
-            </div>
-            <div class="header-actions">
-                <button class="icon-btn" id="watchlistBtn" title="View Watchlist">
-  ⭐ Watchlist
-</button>
+       <header class="header">
+  <div class="brand">
+    <div class="logo-sq"></div>
+    <span class="brand-text">ScreenerAI</span>
+    <span class="version-badge">PRO</span>
+  </div>
 
-                <button class="icon-btn" id="historyBtn" aria-label="Query History" title="View Search History">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12 6 12 12 16 14"/>
-                    </svg>
-                </button>
-                <div class="status-pill" role="status" aria-live="polite">
-                    <span class="status-indicator"></span>
-                    System Ready
-                </div>
-            </div>
-        </header>
+  <div class="header-actions">
+
+    <!-- NAV BUTTONS -->
+    <div class="nav-group">
+      <button class="nav-btn watchlist-btn" id="watchlistBtn">
+        ⭐ <span>Watchlist</span>
+      </button>
+
+      <button class="nav-btn portfolio-btn" onclick="window.location.href='portfolio.html'">
+        💼 <span>Portfolio</span>
+      </button>
+    </div>
+
+    <!-- HISTORY -->
+    <button class="icon-btn" id="historyBtn" title="Query History">
+      🕒
+    </button>
+
+    <!-- STATUS -->
+    <div class="status-pill">
+      <span class="status-indicator"></span>
+      System Ready
+    </div>
+
+  </div>
+</header>
+
 
         <main class="main-content">
             <!-- Search Section -->

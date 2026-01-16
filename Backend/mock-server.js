@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const mockData = require('./mock-data/screener-responses.json');
 const alertRoutes = require('./alerts.routes');
+const portfolioRoutes = require('./portfolio.routes');
+
 require('./alert.engine');
 
 const app = express();
@@ -13,6 +15,8 @@ app.use(express.json());
 
 // ✅ REGISTER ALERT ROUTES (THIS WAS MISSING)
 app.use('/api/v1/alerts', alertRoutes);
+app.use('/api/v1/portfolio', portfolioRoutes);
+
 
 // --------- UTIL ----------
 function applyDSLFilter(stocks, dslQuery) {

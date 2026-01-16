@@ -708,3 +708,192 @@ outline-offset: 2px;
 .star-btn:hover {
   background: rgba(255,215,0,0.2);
 }
+/* ================================
+   HEADER ACTION BUTTONS
+================================ */
+.header-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e7eb;
+  transition: all 0.25s ease;
+}
+
+/* Watchlist */
+.watchlist-btn {
+  border-color: rgba(255, 215, 0, 0.35);
+}
+
+.watchlist-btn:hover {
+  background: rgba(255, 215, 0, 0.15);
+  box-shadow: 0 0 14px rgba(255, 215, 0, 0.4);
+}
+
+/* Portfolio */
+.portfolio-btn {
+  border-color: rgba(0, 242, 255, 0.35);
+}
+
+.portfolio-btn:hover {
+  background: rgba(0, 242, 255, 0.15);
+  box-shadow: 0 0 14px rgba(0, 242, 255, 0.45);
+}
+
+/* Text */
+.header-btn span {
+  letter-spacing: 0.3px;
+}
+/* ================================
+   WATCHLIST BUTTON STYLE
+================================ */
+.watchlist-btn {
+  border-color: rgba(255, 215, 0, 0.35);
+}
+
+.watchlist-btn:hover {
+  background: rgba(255, 215, 0, 0.18);
+  box-shadow: 0 0 14px rgba(255, 215, 0, 0.4);
+  transform: translateY(-1px);
+}
+/* =========================
+   HEADER LAYOUT
+========================= */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 32px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-sq {
+  width: 14px;
+  height: 14px;
+  background: #00f2ff;
+  border-radius: 4px;
+}
+
+.brand-text {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.version-badge {
+  background: #00f2ff;
+  color: #000;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* =========================
+   HEADER ACTIONS
+========================= */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* =========================
+   NAV GROUP (WATCHLIST / PORTFOLIO)
+========================= */
+.nav-group {
+  display: flex;
+  gap: 10px;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid transparent;
+  color: #e5e7eb;
+  transition: all 0.25s ease;
+}
+
+.nav-btn span {
+  position: relative;
+  top: 0.5px;
+}
+
+/* Watchlist */
+.watchlist-btn {
+  border-color: rgba(255,215,0,0.4);
+}
+
+.watchlist-btn:hover {
+  background: rgba(255,215,0,0.15);
+  box-shadow: 0 0 12px rgba(255,215,0,0.35);
+  transform: translateY(-1px);
+}
+
+/* Portfolio */
+.portfolio-btn {
+  border-color: rgba(0,242,255,0.4);
+}
+
+.portfolio-btn:hover {
+  background: rgba(0,242,255,0.15);
+  box-shadow: 0 0 12px rgba(0,242,255,0.4);
+  transform: translateY(-1px);
+}
+
+/* =========================
+   ICON BUTTON
+========================= */
+.icon-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  color: #cbd5e1;
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: rgba(255,255,255,0.12);
+}
+
+/* =========================
+   STATUS PILL
+========================= */
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+}

@@ -96,6 +96,21 @@ function renderRevenueChart() {
       }
     }
   });
+
+  document.getElementById('addPortfolioBtn').onclick = async () => {
+  await fetch('http://localhost:8080/api/v1/portfolio', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      symbol,
+      quantity: 10,
+      buyPrice: document.getElementById('price').innerText
+    })
+  });
+
+  alert('Added to portfolio');
+};
+
 }
 loadCompany();
 renderPriceChart();
