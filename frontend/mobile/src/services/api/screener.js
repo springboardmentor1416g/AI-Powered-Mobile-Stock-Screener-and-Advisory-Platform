@@ -1,7 +1,7 @@
-import api from './api';
+import apiClient from '../apiClient';
 
 export const runScreener = async (query) => {
-  const response = await api.post('/screener/run', {
+  const response = await apiClient.post('/screener/run', {
     query,
   });
   return response.data;

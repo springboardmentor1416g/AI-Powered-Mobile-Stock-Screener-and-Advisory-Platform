@@ -3,6 +3,10 @@ const router = express.Router();
 const screenerAdapter = require('../services/screener.adapter');
 const llmParserService = require('../services/llm_parser/llm_parser.service');
 const fundamentalsService = require('../services/fundamentals.service');
+const authMiddleware = require('../auth/auth.middleware');
+
+// Apply auth middleware to all screener routes
+router.use(authMiddleware);
 
 /**
  * POST /api/v1/screener/run

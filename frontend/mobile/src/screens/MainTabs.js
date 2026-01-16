@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ScreenerScreen from './screener/ScreenerScreen';
 import ScreenerQueryScreen from './ScreenerQuery/ScreenerQueryScreen';
 import ResultsScreen from './Results/ResultsScreen';
+import CompanyDetailScreen from './CompanyDetail/CompanyDetailScreen';
 import WatchlistScreen from './watchlist/WatchlistScreen';
 import PortfolioScreen from './portfolio/PortfolioScreen';
 import AlertsScreen from './alerts/AlertsScreen';
@@ -24,6 +25,7 @@ function ScreenerStack() {
       <Stack.Screen name="ScreenerHome" component={ScreenerScreen} />
       <Stack.Screen name="ScreenerQuery" component={ScreenerQueryScreen} />
       <Stack.Screen name="Results" component={ResultsScreen} />
+      <Stack.Screen name="CompanyDetail" component={CompanyDetailScreen} />
     </Stack.Navigator>
   );
 }
