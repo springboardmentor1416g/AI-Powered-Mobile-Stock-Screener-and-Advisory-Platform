@@ -1,0 +1,33 @@
+name: Backend CI
+
+on:
+  push:
+    branches:
+      - main
+      - A.V.Ambareesh
+  pull_request:
+
+jobs:
+  backend-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          echo "Installing backend dependencies (placeholder)"
+
+      - name: Run tests
+        run: |
+          echo "Running backend tests (placeholder)"
+
+      - name: Build backend
+        run: |
+          echo "Building backend service (placeholder)"

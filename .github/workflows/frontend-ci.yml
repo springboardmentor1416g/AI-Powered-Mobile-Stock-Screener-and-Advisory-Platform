@@ -1,0 +1,33 @@
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - main
+      - A.V.Ambareesh
+  pull_request:
+
+jobs:
+  frontend-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          echo "Installing frontend dependencies (placeholder)"
+
+      - name: Run tests
+        run: |
+          echo "Running frontend tests (placeholder)"
+
+      - name: Build mobile app
+        run: |
+          echo "Building React Native app (placeholder)"
