@@ -1,0 +1,7 @@
+psycopg2-binary
+yfinance
+nselib
+python-dotenv
+pandas
+pandas_market_calendars
+numpy
