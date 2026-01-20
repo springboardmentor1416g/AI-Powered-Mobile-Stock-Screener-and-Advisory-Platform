@@ -2,12 +2,28 @@ import React from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS } from '../constants/colors';
-import { StockCard, EmptyState, LoadingState, ErrorState } from '../components/ResultsView';
+import { SPACING, TYPOGRAPHY, RADIUS, SHADOWS } from '../constants/colors';
+import { StockCard, EmptyState, LoadingState, ErrorState, ResultsActionBar } from '../components/ResultsView';
+import ScreenHeader from '../components/ui/ScreenHeader';
+import Button from '../components/ui/Button';
 
 export default function ResultsScreen({ route, navigation }) {
-  const { results = [], query, isLoading = false, error = null } = route.params || {};
+  const { 
+    results = [], 
+    query, 
+    isLoading = false, 
+    error = null,
+    matchedConditions = {},  // Object mapping ticker to array of conditions
+    showMatchedBadge = true,
+    metadata = {},
+  } = route.params || {};
   const { theme } = useTheme();
+
+  // Debug logging
+  console.log('[ResultsScreen] route.params:', JSON.stringify(route.params, null, 2));
+  console.log('[ResultsScreen] results count:', results?.length);
+  console.log('[ResultsScreen] isLoading:', isLoading);
+  console.log('[ResultsScreen] error:', error);
 
   const getHighlightedFields = () => {
     if (!query) return [];
@@ -32,9 +48,26 @@ export default function ResultsScreen({ route, navigation }) {
     navigation.goBack();
   };
 
-  const renderStockCard = ({ item }) => (
-    <StockCard item={item} highlightedFields={highlightedFields} />
-  );
+  const handleStockPress = (stock) => {
+    navigation.navigate('CompanyDetail', {
+      company: stock,
+      matchedConditions: matchedConditions[stock.ticker] || [],
+      originalQuery: query,
+    });
+  };
+
+  const renderStockCard = ({ item }) => {
+    const itemConditions = matchedConditions[item.ticker] || [];
+    return (
+      <StockCard 
+        item={item} 
+        highlightedFields={highlightedFields}
+        matchedConditions={itemConditions}
+        showMatchedBadge={showMatchedBadge}
+        onPress={() => handleStockPress(item)}
+      />
+    );
+  };
 
   // Loading state
   if (isLoading) {
@@ -62,11 +95,13 @@ export default function ResultsScreen({ route, navigation }) {
   if (!results || results.length === 0) {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.textPrimary }]}>
-            Screener Results
-          </Text>
-        </View>
+        <ScreenHeader 
+          title="Screener Results"
+          leftAction={{
+            icon: 'arrow-back',
+            onPress: () => navigation.goBack()
+          }}
+        />
         <EmptyState />
       </View>
     );
@@ -75,29 +110,26 @@ export default function ResultsScreen({ route, navigation }) {
   // Results state
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <Text style={[styles.title, { color: theme.textPrimary }]}>
-            Screener Results
-          </Text>
-          <TouchableOpacity 
-            style={[styles.editButton, { backgroundColor: theme.surface }]}
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="pencil-outline" size={18} color={theme.primary} />
-            <Text style={[styles.editButtonText, { color: theme.primary }]}>
-              Edit Query
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.resultsCount}>
-          <Ionicons name="checkmark-circle" size={20} color={theme.primary} />
-          <Text style={[styles.countText, { color: theme.textSecondary }]}>
-            {results.length} {results.length === 1 ? 'stock' : 'stocks'} found
-          </Text>
-        </View>
-      </View>
+      <ScreenHeader 
+        title="Screener Results"
+        subtitle={`${results.length} ${results.length === 1 ? 'stock' : 'stocks'} found`}
+        leftAction={{
+          icon: 'arrow-back',
+          onPress: () => navigation.goBack()
+        }}
+        rightAction={{
+          icon: 'pencil-outline',
+          onPress: () => navigation.goBack()
+        }}
+      />
+
+      {/* Export/Save Action Bar */}
+      <ResultsActionBar
+        results={results}
+        query={query}
+        matchedConditions={matchedConditions}
+        metadata={metadata}
+      />
 
       <FlatList
         data={results}
@@ -113,40 +145,6 @@ export default function ResultsScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: { 
     flex: 1,
-  },
-  header: {
-    padding: SPACING.lg,
-    paddingTop: SPACING.xl,
-    gap: SPACING.sm,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  title: {
-    ...TYPOGRAPHY.h1,
-    fontWeight: '700',
-  },
-  editButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    borderRadius: RADIUS.md,
-  },
-  editButtonText: {
-    ...TYPOGRAPHY.bodySmall,
-    fontWeight: '600',
-  },
-  resultsCount: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-  },
-  countText: {
-    ...TYPOGRAPHY.body,
   },
   listContent: {
     paddingHorizontal: SPACING.lg,

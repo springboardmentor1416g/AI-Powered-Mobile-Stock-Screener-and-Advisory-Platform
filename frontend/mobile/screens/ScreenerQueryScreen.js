@@ -3,8 +3,11 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator,
 import { runScreener } from '../services/api';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { SPACING, TYPOGRAPHY, RADIUS, SHADOWS } from '../constants/colors';
+import ScreenHeader from '../components/ui/ScreenHeader';
+import Button from '../components/ui/Button';
 
 export default function ScreenerQueryScreen() {
   const [query, setQuery] = useState('');
@@ -23,14 +26,28 @@ export default function ScreenerQueryScreen() {
     setLoading(true);
 
     try {
-      const results = await runScreener(query);
+      const response = await runScreener(query);
+      console.log('[ScreenerQueryScreen] Response received:', JSON.stringify(response, null, 2));
+      console.log('[ScreenerQueryScreen] Results count:', response.results?.length);
       setLoading(false);
-      navigation.navigate('Results', { results, query, isLoading: false, error: null });
+      
+      navigation.navigate('Results', { 
+        results: response.results,
+        count: response.count,
+        query, 
+        isLoading: false, 
+        error: null,
+        executionTime: response.execution?.executionTime,
+        metadata: response.metadata,
+        matchedConditions: response.matchedConditions || {},
+        showMatchedBadge: true,
+      });
     } catch (err) {
       setLoading(false);
-      const errorMessage = err.response?.data?.message || err.message || 'An unexpected error occurred';
+      const errorMessage = err.message || 'An unexpected error occurred';
       navigation.navigate('Results', { 
         results: [], 
+        count: 0,
         query, 
         isLoading: false, 
         error: errorMessage 
@@ -43,82 +60,61 @@ export default function ScreenerQueryScreen() {
       style={[styles.container, { backgroundColor: theme.background }]} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <LinearGradient
-        colors={theme.gradientBackground}
-        style={styles.gradient}
-      >
-        <ScrollView 
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.header}>
-            <LinearGradient
-              colors={isDarkMode ? ['#1E3A8A15', '#1E3A8A25'] : ['#EFF6FF', '#DBEAFE']}
-              style={styles.headerCard}
-            >
-              <View style={styles.headerContent}>
-                <View style={[styles.iconBadge, { backgroundColor: theme.primary }]}>
-                  <Text style={styles.headerIcon}>📈</Text>
-                </View>
-                <View style={styles.headerText}>
-                  <Text style={[styles.title, { color: theme.textPrimary }]}>Stock Screener</Text>
-                  <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-                    Stock analysis and screening tool for Investors
-                  </Text>
-                </View>
-              </View>
-            </LinearGradient>
-          </View>
+      <ScreenHeader
+        title="Stock Screener"
+        subtitle="Find stocks that match your criteria"
+        showGradient
+      />
 
-          <View style={[styles.card, { backgroundColor: theme.surface }]}>
-            <Text style={[styles.label, { color: theme.textPrimary }]}>Screening Query</Text>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Query Input Card */}
+        <View style={[styles.queryCard, { backgroundColor: theme.surface }, SHADOWS.medium]}>
+          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+            Your Query
+          </Text>
+          
+          <View style={[
+            styles.inputWrapper,
+            { backgroundColor: theme.background, borderColor: error ? theme.error : theme.border }
+          ]}>
             <TextInput
-              style={[styles.input, { 
-                backgroundColor: theme.background,
-                borderColor: theme.border,
-                color: theme.textPrimary 
-              }]}
-              placeholder=""
+              style={[styles.input, { color: theme.textPrimary }]}
+              placeholder="e.g., Show me stocks with PE less than 20 and ROE above 15%"
               placeholderTextColor={theme.placeholder}
               value={query}
-              onChangeText={setQuery}
+              onChangeText={(text) => {
+                setQuery(text);
+                if (error) setError('');
+              }}
               multiline
               numberOfLines={4}
             />
-
-            {error ? (
-              <View style={[styles.errorContainer, { 
-                backgroundColor: theme.error + '15',
-                borderLeftColor: theme.error 
-              }]}>
-                <Text style={styles.errorIcon}>⚠️</Text>
-                <Text style={[styles.errorText, { color: theme.error }]}>{error}</Text>
-              </View>
-            ) : null}
-
-            <TouchableOpacity 
-              style={styles.buttonWrapper}
-              onPress={handleRunScreener} 
-              disabled={loading}
-              activeOpacity={0.8}
-            >
-              <LinearGradient
-                colors={loading ? [theme.disabled, theme.disabled] : theme.gradientPrimary}
-                style={styles.button}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <>
-                    <Text style={styles.buttonText}>Run Screener</Text>
-                    <Text style={styles.buttonIcon}>→</Text>
-                  </>
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
           </View>
-        </ScrollView>
-      </LinearGradient>
+
+          {error ? (
+            <View style={[styles.errorContainer, { backgroundColor: theme.errorBackground }]}>
+              <Ionicons name="alert-circle" size={18} color={theme.error} />
+              <Text style={[styles.errorText, { color: theme.error }]}>{error}</Text>
+            </View>
+          ) : null}
+
+          <Button
+            title={loading ? "Analyzing..." : "Run Screener"}
+            onPress={handleRunScreener}
+            loading={loading}
+            disabled={loading}
+            icon="search"
+            fullWidth
+            size="lg"
+            style={styles.submitButton}
+          />
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -127,106 +123,45 @@ const styles = StyleSheet.create({
   container: { 
     flex: 1,
   },
-  gradient: {
+  scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: SPACING.lg,
-    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.xxl,
   },
-  header: {
-    marginBottom: SPACING.lg,
-  },
-  headerCard: {
-    borderRadius: RADIUS.lg,
+  queryCard: {
     padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.15)',
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.md,
-  },
-  iconBadge: {
-    width: 56,
-    height: 56,
-    borderRadius: RADIUS.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerIcon: {
-    fontSize: 32,
-  },
-  headerText: {
-    flex: 1,
-    gap: SPACING.xs,
-  },
-  title: {
-    ...TYPOGRAPHY.h2,
-    fontWeight: '800',
-  },
-  subtitle: {
-    ...TYPOGRAPHY.bodySmall,
-    lineHeight: 18,
-  },
-  card: {
     borderRadius: RADIUS.lg,
-    padding: SPACING.lg,
-    marginBottom: SPACING.lg,
-    ...SHADOWS.medium,
   },
-  label: {
-    ...TYPOGRAPHY.h3,
+  sectionTitle: {
+    ...TYPOGRAPHY.h4,
     marginBottom: SPACING.md,
-    fontWeight: '600',
   },
-  input: {
+  inputWrapper: {
     borderWidth: 1.5,
     borderRadius: RADIUS.md,
-    padding: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  input: {
     ...TYPOGRAPHY.body,
+    padding: SPACING.md,
     minHeight: 100,
     textAlignVertical: 'top',
   },
   errorContainer: {
-    borderLeftWidth: 3,
-    borderRadius: RADIUS.sm,
-    padding: SPACING.md,
-    marginTop: SPACING.md,
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  errorIcon: {
-    fontSize: 20,
-    marginRight: SPACING.sm,
+    gap: SPACING.sm,
+    padding: SPACING.sm,
+    borderRadius: RADIUS.sm,
+    marginBottom: SPACING.sm,
   },
   errorText: {
     ...TYPOGRAPHY.bodySmall,
     flex: 1,
-    fontWeight: '500',
   },
-  buttonWrapper: {
-    marginTop: SPACING.xl,
-    borderRadius: RADIUS.full,
-    overflow: 'hidden',
-    ...SHADOWS.large,
-  },
-  button: {
-    paddingVertical: SPACING.lg,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonText: {
-    ...TYPOGRAPHY.h3,
-    color: '#FFFFFF',
-    marginRight: SPACING.sm,
-    fontWeight: '700',
-  },
-  buttonIcon: {
-    fontSize: 22,
-    color: '#FFFFFF',
-    fontWeight: '700',
+  submitButton: {
+    marginTop: SPACING.md,
   },
 });

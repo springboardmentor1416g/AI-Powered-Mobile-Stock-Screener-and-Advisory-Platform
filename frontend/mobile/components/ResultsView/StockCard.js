@@ -1,16 +1,26 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, TYPOGRAPHY, RADIUS, SHADOWS } from '../../constants/colors';
 import MetricRow from './MetricRow';
 
-export default function StockCard({ item, highlightedFields = [] }) {
+export default function StockCard({ 
+  item, 
+  highlightedFields = [], 
+  matchedConditions = [],
+  onPress,
+  showMatchedBadge = false,
+}) {
   const { theme, isDarkMode } = useTheme();
   const { width } = useWindowDimensions();
   
   const isSmallScreen = width < 375;
   const cardWidth = width - (SPACING.lg * 2);
+  
+  // Check for derived metrics
+  const hasDerivedMetrics = item.peg_ratio || item.debt_to_fcf || item.fcf_margin;
 
   const formatNumber = (num) => {
     if (num === null || num === undefined || isNaN(num)) return null;
@@ -29,10 +39,13 @@ export default function StockCard({ item, highlightedFields = [] }) {
     return Number(num).toFixed(2);
   };
 
+  const CardWrapper = onPress ? TouchableOpacity : View;
+  const cardProps = onPress ? { onPress, activeOpacity: 0.8 } : {};
+
   return (
-    <View style={[styles.cardContainer, { width: cardWidth }]}>
+    <CardWrapper {...cardProps} style={[styles.cardContainer, { width: cardWidth }]}>
       <LinearGradient
-        colors={isDarkMode ? ['#1e3a8a', '#1e40af'] : ['#dbeafe', '#bfdbfe']}
+        colors={isDarkMode ? theme.gradientHeader : ['#EEF2FF', '#DBEAFE']}
         style={styles.gradientHeader}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -41,7 +54,7 @@ export default function StockCard({ item, highlightedFields = [] }) {
           <View style={styles.companyInfo}>
             <Text 
               style={[styles.ticker, { 
-                color: isDarkMode ? '#fff' : '#1e40af',
+                color: isDarkMode ? '#fff' : '#111827',
                 fontSize: isSmallScreen ? 20 : 24,
               }]}
               numberOfLines={1}
@@ -50,7 +63,7 @@ export default function StockCard({ item, highlightedFields = [] }) {
             </Text>
             <Text 
               style={[styles.companyName, { 
-                color: isDarkMode ? '#e0e7ff' : '#3b82f6',
+                color: isDarkMode ? 'rgba(255,255,255,0.82)' : '#2563EB',
                 fontSize: isSmallScreen ? 12 : 13,
               }]}
               numberOfLines={1}
@@ -58,6 +71,27 @@ export default function StockCard({ item, highlightedFields = [] }) {
             >
               {item.name}
             </Text>
+          </View>
+          {/* Badges for derived metrics and matched conditions */}
+          <View style={styles.badgesContainer}>
+            {hasDerivedMetrics && (
+              <View style={[styles.derivedBadge, { backgroundColor: isDarkMode ? '#4c1d95' : '#ddd6fe' }]}>
+                <Ionicons name="flask-outline" size={10} color={isDarkMode ? '#c4b5fd' : '#7c3aed'} />
+                <Text style={[styles.badgeText, { color: isDarkMode ? '#c4b5fd' : '#7c3aed' }]}>
+                  Derived
+                </Text>
+              </View>
+            )}
+            {matchedConditions.length > 0 && showMatchedBadge && (
+              <View style={[styles.matchedBadge, { backgroundColor: isDarkMode ? '#065f46' : '#d1fae5' }]}>
+                <Text style={[styles.badgeText, { color: isDarkMode ? '#6ee7b7' : '#059669' }]}>
+                  {matchedConditions.length} matched
+                </Text>
+              </View>
+            )}
+            {onPress && (
+              <Ionicons name="chevron-forward" size={18} color={isDarkMode ? '#94a3b8' : '#64748b'} />
+            )}
           </View>
         </View>
       </LinearGradient>
@@ -123,7 +157,7 @@ export default function StockCard({ item, highlightedFields = [] }) {
           </View>
         </View>
       </View>
-    </View>
+    </CardWrapper>
   );
 }
 
@@ -152,6 +186,28 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   companyName: {
+    fontWeight: '600',
+  },
+  badgesContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+  },
+  derivedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.xs,
+    paddingVertical: 2,
+    borderRadius: RADIUS.xs,
+    gap: 3,
+  },
+  matchedBadge: {
+    paddingHorizontal: SPACING.xs,
+    paddingVertical: 2,
+    borderRadius: RADIUS.xs,
+  },
+  badgeText: {
+    fontSize: 10,
     fontWeight: '600',
   },
   cardContent: {
