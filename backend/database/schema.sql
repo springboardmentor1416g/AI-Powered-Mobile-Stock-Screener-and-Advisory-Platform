@@ -8,6 +8,8 @@ CREATE TABLE companies (
     industry VARCHAR(100),
     exchange VARCHAR(20),
     market_cap BIGINT,
+    next_earnings_date DATE,
+    last_buyback_date DATE,
     created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -35,6 +37,11 @@ CREATE TABLE fundamentals_quarterly (
     roa NUMERIC,
     pe_ratio NUMERIC,
     pb_ratio NUMERIC,
+    promoter_holding NUMERIC,
+    peg_ratio NUMERIC,
+    ebitda BIGINT,
+    revenue_growth_yoy NUMERIC,
+    ebitda_growth_yoy NUMERIC,
     created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -64,7 +71,8 @@ CREATE TABLE cashflow_statements (
     cfo BIGINT,
     cfi BIGINT,
     cff BIGINT,
-    capex BIGINT
+    capex BIGINT,
+    free_cash_flow BIGINT
 );
 
 CREATE TABLE debt_profile (
@@ -73,6 +81,7 @@ CREATE TABLE debt_profile (
     quarter VARCHAR(10),
     short_term_debt BIGINT,
     long_term_debt BIGINT,
+    total_debt BIGINT,
     debt_to_equity NUMERIC
 );
 

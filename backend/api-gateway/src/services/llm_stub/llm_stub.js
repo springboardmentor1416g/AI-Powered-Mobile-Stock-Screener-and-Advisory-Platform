@@ -96,10 +96,17 @@ function parseAndConditions(query) {
 
 // Parse a single condition with optional time constraints
 function parseCondition(conditionStr) {
-    // Enhanced pattern to capture metric, operator, value, and optional time constraint
-    const pattern = /(.+?)\s*(!==|!=|<=|>=|<|>|=|less than or equal to|greater than or equal to|less than|greater than|equal to|not equal to)\s*([\d.]+)(?:\s+in\s+last\s+(\d+)\s+(quarters?|years?|months?))?/i;
+    // Remove common prefixes like "show stocks with", "find stocks where", etc.
+    let cleanedStr = conditionStr
+        .replace(/^(show|find|get|list|display)\s+(stocks?|companies?)\s+(with|where|having)\s+/i, '')
+        .replace(/^(stocks?|companies?)\s+(with|where|having)\s+/i, '')
+        .trim();
     
-    const match = conditionStr.match(pattern);
+    // Enhanced pattern to capture metric, operator, value, and optional time constraint
+    // Support: below, above, under, over, at least, at most as operator synonyms
+    const pattern = /(.+?)\s*(!==|!=|<=|>=|<|>|=|below|above|under|over|at least|at most|less than or equal to|greater than or equal to|less than|greater than|equal to|not equal to)\s*([\d.]+)(?:\s+in\s+last\s+(\d+)\s+(quarters?|years?|months?))?/i;
+    
+    const match = cleanedStr.match(pattern);
     if (!match) return null;
     
     const metricPhrase = match[1].trim();
@@ -157,6 +164,12 @@ function normalizeOperator(op) {
         '=': '=',
         '!=': '!=',
         '!==': '!=',
+        'below': '<',
+        'under': '<',
+        'above': '>',
+        'over': '>',
+        'at least': '>=',
+        'at most': '<=',
         'less than': '<',
         'greater than': '>',
         'equal to': '=',

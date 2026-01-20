@@ -1,18 +1,3 @@
-/**
- * Screener Compiler Service
- * 
- * Responsibilities:
- * - Translate validated DSL to SQL queries
- * - Map DSL fields to database schema
- * - Generate proper JOINs between tables
- * - Handle logical operators (AND, OR, NOT)
- * - Apply sorting and limits
- * 
- * Security:
- * - Only accepts validated DSL (never raw user input)
- * - Uses parameterized queries to prevent SQL injection
- */
-
 const FIELD_TABLE_MAP = {
   // From companies table
   'ticker': { table: 'companies', column: 'ticker' },
@@ -21,6 +6,8 @@ const FIELD_TABLE_MAP = {
   'sector': { table: 'companies', column: 'sector' },
   'industry': { table: 'companies', column: 'industry' },
   'exchange': { table: 'companies', column: 'exchange' },
+  'next_earnings_date': { table: 'companies', column: 'next_earnings_date' },
+  'last_buyback_date': { table: 'companies', column: 'last_buyback_date' },
   
   // From price_history table
   'open': { table: 'price_history', column: 'open' },
@@ -38,17 +25,24 @@ const FIELD_TABLE_MAP = {
   'roa': { table: 'fundamentals_quarterly', column: 'roa' },
   'pe_ratio': { table: 'fundamentals_quarterly', column: 'pe_ratio' },
   'pb_ratio': { table: 'fundamentals_quarterly', column: 'pb_ratio' },
+  'promoter_holding': { table: 'fundamentals_quarterly', column: 'promoter_holding' },
+  'peg_ratio': { table: 'fundamentals_quarterly', column: 'peg_ratio' },
+  'ebitda': { table: 'fundamentals_quarterly', column: 'ebitda' },
+  'revenue_growth_yoy': { table: 'fundamentals_quarterly', column: 'revenue_growth_yoy' },
+  'ebitda_growth_yoy': { table: 'fundamentals_quarterly', column: 'ebitda_growth_yoy' },
   
   // From debt_profile table
   'short_term_debt': { table: 'debt_profile', column: 'short_term_debt' },
   'long_term_debt': { table: 'debt_profile', column: 'long_term_debt' },
   'debt_to_equity': { table: 'debt_profile', column: 'debt_to_equity' },
+  'total_debt': { table: 'debt_profile', column: 'total_debt' },
   
   // From cashflow_statements table
   'cfo': { table: 'cashflow_statements', column: 'cfo' },
   'cfi': { table: 'cashflow_statements', column: 'cfi' },
   'cff': { table: 'cashflow_statements', column: 'cff' },
   'capex': { table: 'cashflow_statements', column: 'capex' },
+  'free_cash_flow': { table: 'cashflow_statements', column: 'free_cash_flow' },
   
   // From analyst_estimates table
   'eps_estimate': { table: 'analyst_estimates', column: 'eps_estimate' },
@@ -72,6 +66,10 @@ class ScreenerCompilerService {
     };
 
     const whereClause = this._compileFilter(dsl.filter, context);
+    
+    // Always include price_history for current price
+    context.requiredTables.add('price_history');
+    
     const joins = this._generateJoins(context.requiredTables);
     const orderBy = dsl.sort ? this._compileSort(dsl.sort) : 'c.market_cap DESC';
     const limit = dsl.limit || 100;
@@ -81,15 +79,32 @@ class ScreenerCompilerService {
         c.ticker,
         c.name,
         c.sector,
-        c.market_cap,
+        c.industry,
         c.exchange,
+        c.market_cap,
+        c.next_earnings_date,
+        c.last_buyback_date,
         fq.pe_ratio,
+        fq.pb_ratio,
         fq.roe,
+        fq.roa,
         fq.revenue,
-        fq.net_income
+        fq.net_income,
+        fq.eps,
+        fq.operating_margin,
+        fq.promoter_holding,
+        fq.peg_ratio,
+        fq.ebitda,
+        fq.revenue_growth_yoy,
+        fq.ebitda_growth_yoy,
+        ph.close as current_price,
+        ph.open,
+        ph.high,
+        ph.low,
+        ph.volume
       FROM companies c
       ${joins}
-      WHERE ${whereClause}
+      WHERE ${whereClause} AND ph.close IS NOT NULL
       ORDER BY ${orderBy}
       LIMIT $${context.paramCounter}
     `.trim();

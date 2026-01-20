@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       health: '/health',
-      screener: '/api/screener',
+      iscreener: '/api/screener',
       metadata: '/api/metadata'
     }
   });

@@ -31,7 +31,7 @@ const signup = asyncHandler(async (req, res) => {
     const existingUser = await db.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
     
     if (existingUser.rows.length > 0) {
-      throw new ApiError(409, 'User with this email already exists', 'USER_EXISTS');
+      throw new ApiError(409, 'Account already exists. Please log in.', 'USER_EXISTS');
     }
 
     // Hash password with bcrypt (auto-generates salt)
@@ -54,10 +54,24 @@ const signup = asyncHandler(async (req, res) => {
       traceId: req.traceId 
     });
 
+    // Generate JWT token for immediate login
+    const tokenPayload = {
+      userId: user.id,
+      email: user.email,
+      iat: Math.floor(Date.now() / 1000),
+    };
+
+    const token = jwt.sign(
+      tokenPayload,
+      config.jwt.secret,
+      { expiresIn: config.jwt.expiresIn }
+    );
+
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: 'Signup successful! Please log in to continue.',
       data: {
+        token,
         userId: user.id,
         email: user.email,
         createdAt: user.created_at,
@@ -80,7 +94,13 @@ const login = asyncHandler(async (req, res) => {
 
   // Validate input
   if (!email || !password) {
-    throw new ApiError(400, 'Email and password are required', 'MISSING_FIELDS');
+    throw new ApiError(400, 'Please provide valid email and password.', 'MISSING_FIELDS');
+  }
+
+  // Validate email format
+  const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+  if (!emailRegex.test(email)) {
+    throw new ApiError(400, 'Please provide a valid email address.', 'INVALID_EMAIL_FORMAT');
   }
 
   try {
@@ -91,7 +111,7 @@ const login = asyncHandler(async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      throw new ApiError(401, 'Invalid credentials', 'INVALID_CREDENTIALS');
+      throw new ApiError(401, 'Account not found. Please sign up first.', 'USER_NOT_FOUND');
     }
 
     const user = result.rows[0];
@@ -100,7 +120,7 @@ const login = asyncHandler(async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     
     if (!isPasswordValid) {
-      throw new ApiError(401, 'Invalid credentials', 'INVALID_CREDENTIALS');
+      throw new ApiError(401, 'Incorrect password. Please try again.', 'INVALID_PASSWORD');
     }
 
     // Update last_login timestamp
@@ -130,7 +150,7 @@ const login = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'Login successful',
+      message: 'Login successful. Welcome back!',
       data: {
         token,
         userId: user.id,
@@ -178,7 +198,7 @@ const logout = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'Logout successful',
+      message: 'You have been logged out successfully.',
       data: null
     });
   } catch (error) {

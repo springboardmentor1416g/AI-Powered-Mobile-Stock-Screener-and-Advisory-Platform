@@ -4,6 +4,11 @@ const healthRoutes = require('./healthRoutes');
 const metadataRoutes = require('./metadataRoutes');
 const authRoutes = require('./auth');
 const screenerRoutes = require('./screener');
+const portfolioRoutes = require('./portfolio');
+const watchlistRoutes = require('./watchlist');
+const alertRoutes = require('./alert');
+const companyRoutes = require('./company');
+const notificationsRoutes = require('./notifications');
 
 // Health check routes
 router.use('/health', healthRoutes);
@@ -16,5 +21,20 @@ router.use('/auth', authRoutes);
 
 // Screener routes
 router.use('/screener', screenerRoutes);
+
+// Portfolio routes
+router.use('/portfolios', portfolioRoutes);
+
+// Watchlist routes
+router.use('/watchlists', watchlistRoutes);
+
+// Alert routes
+router.use('/alerts', alertRoutes);
+
+// Notifications routes
+router.use('/notifications', notificationsRoutes);
+
+// Company routes (historical data, charts, news)
+router.use('/company', companyRoutes);
 
 module.exports = router;

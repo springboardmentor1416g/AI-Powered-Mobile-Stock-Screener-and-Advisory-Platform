@@ -1,24 +1,14 @@
-/**
- * Screener Runner Service
- * 
- * Responsibilities:
- * - Execute compiled SQL queries against PostgreSQL
- * - Handle database connection and pooling
- * - Format results for frontend
- * - Handle query errors and timeouts
- * - Log query performance
- */
-
 const { Pool } = require('pg');
+const config = require('../../config');
 
 class ScreenerRunnerService {
   constructor() {
     this.pool = new Pool({
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT) || 5432,
-      database: process.env.DB_NAME || 'stock_screener',
-      user: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD,
+      host: config.database.host,
+      port: config.database.port,
+      database: config.database.name,
+      user: config.database.user,
+      password: config.database.password,
       max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 5000,
