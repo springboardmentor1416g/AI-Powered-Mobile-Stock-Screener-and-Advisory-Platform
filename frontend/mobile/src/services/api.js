@@ -10,7 +10,7 @@ export async function getAuthToken() {
 
 export async function runScreener(query) {
   const response = await fetch(
-    "http://192.168.1.4:8080/screener/run",
+    "http://192.168.1.2:8080/screener/run",
     {
       method: "POST",
       headers: {
@@ -30,7 +30,7 @@ export async function runScreener(query) {
 export async function getNotifications() {
   const token = await getAuthToken(); // same helper you already use
 
-  const res = await fetch("http://192.168.1.4:8080/api/v1/notifications", {
+  const res = await fetch("http://192.168.1.2:8080/api/v1/notifications", {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -44,7 +44,7 @@ export async function getNotifications() {
 }
 
 export async function autoLogin() {
-  const res = await fetch("http://192.168.1.4:8080/auth/login", {
+  const res = await fetch("http://192.168.1.2:8080/auth/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -63,3 +63,23 @@ export async function autoLogin() {
     throw new Error("Auto login failed");
   }
 }
+
+export async function addToWatchlist(ticker) {
+  const token = await getAuthToken();
+
+  const res = await fetch(`http://192.168.1.2:8080/api/v1/watchlist`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ ticker }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to add to watchlist");
+  }
+
+  return res.json();
+}
+

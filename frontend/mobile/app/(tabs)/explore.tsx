@@ -23,7 +23,7 @@ export default function ScreenerScreen() {
         },
       });
     } catch (error) {
-      alert("Failed to run screener");
+      alert("Network issue. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -37,6 +37,7 @@ export default function ScreenerScreen() {
 
       <TextInput
         placeholder="e.g. PE &lt; 10 and promoter holding &gt; 50"
+        placeholderTextColor="#888"
         value={query}
         onChangeText={setQuery}
         style={{
@@ -44,6 +45,8 @@ export default function ScreenerScreen() {
           borderColor: "#ccc",
           padding: 10,
           marginBottom: 20,
+          backgroundColor: "#ffffff",  
+          color: "#000000",
         }}
       />
 

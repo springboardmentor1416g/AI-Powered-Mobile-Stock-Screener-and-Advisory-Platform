@@ -43,8 +43,8 @@ export default function ResultsScreen() {
   if (results.length === 0) {
     return (
       <View style={{ flex: 1, padding: 20 }}>
-        <Text style={{ fontSize: 18 }}>
-          No stocks matched your criteria.
+        <Text style={{ fontSize: 16 }}>
+          No stocks matched your criteria. Try adjusting your filters.
         </Text>
       </View>
     );
