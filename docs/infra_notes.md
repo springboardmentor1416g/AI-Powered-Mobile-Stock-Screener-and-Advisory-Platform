@@ -1,0 +1,4 @@
+- Daily DB backups (pg_dump)
+- PITR enabled in staging/prod
+- TLS enforced in production
+- Read-only DB roles for analytics
