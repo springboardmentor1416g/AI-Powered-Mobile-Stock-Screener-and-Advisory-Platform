@@ -1,3 +1,0 @@
-CREATE DATABASE stock_screener_dev;
-CREATE DATABASE stock_screener_staging;
-CREATE DATABASE stock_screener_prod;
