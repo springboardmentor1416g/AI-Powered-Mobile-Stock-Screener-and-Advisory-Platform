@@ -1,15 +1,36 @@
-# Backend Setup
+Backend Setup
 
-## Prerequisites
-Ensure you have the following installed before running the backend:
-- **Node.js** (LTS version recommended)
-- **npm** (comes with Node.js)
+Prerequisites
+- Node.js (LTS recommended)
+- npm
 
-## Installing Dependencies
-The `node_modules` folder is **not included** in this repository.
+Setup Files (IMPORTANT)
+Before running the backend, copy all files from the setup folder into the backend folder.
 
-To install all required dependencies:
+From:
+backend/setup/
 
-```bash
+To:
+backend/
+
+After copying the files, the setup folder can be ignored or deleted.
+
+Install Dependencies
+The node_modules folder is NOT included in this repository.
+
+Run the following commands:
 cd backend
 npm install
+
+This will install all required dependencies.
+
+Run Backend
+Start the backend server:
+npm start
+
+Or:
+npm run dev
+
+Notes
+- Always copy the setup files before running npm install
+- Do not push node_modules to GitHub
