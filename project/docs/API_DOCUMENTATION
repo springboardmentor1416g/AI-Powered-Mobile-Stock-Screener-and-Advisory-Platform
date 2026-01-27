@@ -1,0 +1,529 @@
+# API Documentation
+
+## Base URL
+- **Development**: `http://localhost:8080`
+- **Production**: `https://api.stock-screener.com`
+
+## Authentication
+
+All protected endpoints require a JWT token in the Authorization header:
+
+```bash
+Authorization: Bearer <token>
+```
+
+---
+
+## Authentication Endpoints
+
+### Register User
+**POST** `/api/v1/auth/register`
+
+Create a new user account.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "securePassword123",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "user": {
+    "id": 1,
+    "email": "user@example.com",
+    "firstName": "John",
+    "lastName": "Doe",
+    "createdAt": "2024-01-27T10:00:00Z"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+---
+
+### Login User
+**POST** `/api/v1/auth/login`
+
+Authenticate user and get JWT token.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "securePassword123"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "user": {
+    "id": 1,
+    "email": "user@example.com",
+    "firstName": "John",
+    "lastName": "Doe"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+---
+
+### Refresh Token
+**POST** `/api/v1/auth/refresh`
+
+Get a new token using an existing valid token.
+
+**Headers:**
+```
+Authorization: Bearer <existing_token>
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+---
+
+### Forgot Password
+**POST** `/api/v1/auth/password/forgot`
+
+Request password reset email.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Password reset email sent"
+}
+```
+
+---
+
+### Reset Password
+**POST** `/api/v1/auth/password/reset`
+
+Reset password using reset token.
+
+**Request Body:**
+```json
+{
+  "token": "reset_token_from_email",
+  "newPassword": "newSecurePassword123"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Password reset successfully"
+}
+```
+
+---
+
+## Screener Endpoints
+
+### Run Screener
+**POST** `/api/v1/screener/run`
+
+Execute a stock screening query.
+
+**Request Body:**
+```json
+{
+  "filter": {
+    "conditions": [
+      {
+        "field": "pe_ratio",
+        "operator": "<",
+        "value": 20
+      },
+      {
+        "field": "sector",
+        "operator": "=",
+        "value": "Technology"
+      }
+    ],
+    "logical_operator": "AND"
+  },
+  "options": {
+    "limit": 50,
+    "offset": 0,
+    "orderBy": [{"field": "pe_ratio", "direction": "ASC"}]
+  }
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "last_price": 182.50,
+      "pe_ratio": 18.5,
+      "sector": "Technology",
+      "industry": "Consumer Electronics",
+      "market_cap": 2850000000000
+    }
+  ],
+  "meta": {
+    "total": 256,
+    "count": 50,
+    "limit": 50,
+    "offset": 0,
+    "executionTime": 245
+  }
+}
+```
+
+---
+
+### Parse Natural Language Query
+**POST** `/api/v1/screener/parse`
+
+Convert natural language to screener filter.
+
+**Request Body:**
+```json
+{
+  "query": "Find tech stocks with PE ratio less than 20 and ROE above 15%"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "filter": {
+    "conditions": [
+      {"field": "sector", "operator": "=", "value": "Technology"},
+      {"field": "pe_ratio", "operator": "<", "value": 20},
+      {"field": "roe", "operator": ">", "value": 15}
+    ],
+    "logical_operator": "AND"
+  },
+  "explanation": "Looking for Technology sector stocks with PE ratio below 20 and ROE above 15%",
+  "validation": {"valid": true}
+}
+```
+
+---
+
+### Validate Filter
+**POST** `/api/v1/screener/validate`
+
+Validate a screener filter.
+
+**Request Body:**
+```json
+{
+  "filter": {
+    "conditions": [
+      {"field": "pe_ratio", "operator": "<", "value": 20}
+    ],
+    "logical_operator": "AND"
+  }
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "valid": true,
+  "errors": []
+}
+```
+
+---
+
+## Market Data Endpoints
+
+### Get Quote
+**GET** `/api/v1/market/quote/:symbol`
+
+Get real-time quote for a stock symbol.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "symbol": "AAPL",
+    "name": "Apple Inc.",
+    "price": 182.50,
+    "open": 180.25,
+    "high": 183.75,
+    "low": 179.90,
+    "volume": 52000000,
+    "previousClose": 181.80,
+    "change": 0.70,
+    "percentChange": 0.39,
+    "timestamp": "2024-01-27T16:00:00Z"
+  }
+}
+```
+
+---
+
+### Get Time Series Data
+**GET** `/api/v1/market/timeseries/:symbol`
+
+Get OHLCV data for a stock.
+
+**Query Parameters:**
+- `interval` (optional): 1min, 5min, 15min, 30min, 1h, 1day, 1week, 1month (default: 1day)
+- `outputsize` (optional): Number of bars (1-5000, default: 365)
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "datetime": "2024-01-26",
+      "open": 180.25,
+      "high": 183.75,
+      "low": 179.90,
+      "close": 182.50,
+      "volume": 52000000
+    }
+  ],
+  "meta": {
+    "symbol": "AAPL",
+    "interval": "1day",
+    "count": 365
+  }
+}
+```
+
+---
+
+### Get Company Profile
+**GET** `/api/v1/market/profile/:symbol`
+
+Get company profile information.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "symbol": "AAPL",
+    "name": "Apple Inc.",
+    "sector": "Technology",
+    "industry": "Consumer Electronics",
+    "exchange": "NASDAQ",
+    "description": "Apple Inc. designs, manufactures...",
+    "website": "https://www.apple.com",
+    "ceo": "Tim Cook",
+    "employees": 164000
+  }
+}
+```
+
+---
+
+## Alerts Endpoints
+
+### Create Alert
+**POST** `/api/v1/alerts`
+
+Create a new price or technical alert.
+
+**Request Body:**
+```json
+{
+  "ticker": "AAPL",
+  "alertName": "Apple Below 175",
+  "alertType": "price",
+  "condition": {
+    "operator": "<",
+    "value": 175
+  },
+  "frequency": "daily"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "alert": {
+    "id": 1,
+    "userId": 1,
+    "ticker": "AAPL",
+    "alertName": "Apple Below 175",
+    "alertType": "price",
+    "isActive": true,
+    "createdAt": "2024-01-27T10:00:00Z"
+  }
+}
+```
+
+---
+
+### Get User Alerts
+**GET** `/api/v1/alerts`
+
+Get all alerts for authenticated user.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "alerts": [
+    {
+      "id": 1,
+      "ticker": "AAPL",
+      "alertName": "Apple Below 175",
+      "alertType": "price",
+      "isActive": true,
+      "createdAt": "2024-01-27T10:00:00Z",
+      "lastTriggered": "2024-01-27T14:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### Toggle Alert
+**PATCH** `/api/v1/alerts/:id`
+
+Activate or deactivate an alert.
+
+**Request Body:**
+```json
+{
+  "isActive": false
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "alert": {
+    "id": 1,
+    "isActive": false,
+    "updatedAt": "2024-01-27T15:00:00Z"
+  }
+}
+```
+
+---
+
+## Error Responses
+
+### 400 Bad Request
+```json
+{
+  "success": false,
+  "message": "Invalid input",
+  "errors": [
+    {"field": "email", "message": "Invalid email format"}
+  ]
+}
+```
+
+### 401 Unauthorized
+```json
+{
+  "success": false,
+  "message": "No token provided"
+}
+```
+
+### 404 Not Found
+```json
+{
+  "success": false,
+  "message": "Resource not found"
+}
+```
+
+### 500 Internal Server Error
+```json
+{
+  "success": false,
+  "message": "Internal server error"
+}
+```
+
+---
+
+## Rate Limiting
+
+All endpoints are rate-limited to **100 requests per 15 minutes** per IP address.
+
+**Response Headers:**
+- `X-RateLimit-Limit`: 100
+- `X-RateLimit-Remaining`: 99
+- `X-RateLimit-Reset`: 1706351400
+
+When rate limited, you'll receive a **429 Too Many Requests** response.
+
+---
+
+## Pagination
+
+List endpoints support pagination with:
+- `limit` (default: 100, max: 1000)
+- `offset` (default: 0)
+
+Example:
+```
+GET /api/v1/screener/run?limit=50&offset=100
+```
+
+---
+
+## Timestamps
+
+All timestamps are in **ISO 8601 format** (UTC):
+```
+2024-01-27T10:30:45Z
+```
+
+---
+
+## Status Codes
+
+| Code | Meaning |
+|------|---------|
+| 200 | OK - Success |
+| 201 | Created - Resource created |
+| 400 | Bad Request - Invalid input |
+| 401 | Unauthorized - Missing/invalid token |
+| 404 | Not Found - Resource not found |
+| 429 | Too Many Requests - Rate limited |
+| 500 | Server Error - Internal error |
+
+---
+
+*Last Updated: January 27, 2024*
