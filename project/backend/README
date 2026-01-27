@@ -1,0 +1,15 @@
+# Backend Setup
+
+## Prerequisites
+Ensure you have the following installed before running the backend:
+- **Node.js** (LTS version recommended)
+- **npm** (comes with Node.js)
+
+## Installing Dependencies
+The `node_modules` folder is **not included** in this repository.
+
+To install all required dependencies:
+
+```bash
+cd backend
+npm install
