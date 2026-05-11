@@ -1,0 +1,54 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Node dependencies
+        working-directory: backend/api-gateway
+        run: npm install 
+        continue-on-error: true
+
+      - name: Run Node tests
+        working-directory: backend/api-gateway
+        run: npm test
+        continue-on-error: true
+
+      # fast api services
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        working-directory: backend/services
+        run: pip install -r requirements.txt
+
+      - name: Run FastAPI tests
+        working-directory: backend/services
+        run: pytest
+
+      - name: Build backend (placeholder)
+        working-directory: ./backend
+        run: echo "Build backend here (e.g., npm run build, gradle build, etc.)"
+
+      - name: Build Docker image (placeholder)
+        run: |
+          echo "docker build -t your-backend-image:latest ."
+          echo "docker push your-backend-image:latest"

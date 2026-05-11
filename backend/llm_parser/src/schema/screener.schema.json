@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "required": ["intent", "filters"],
+  "properties": {
+    "intent": {
+      "type": "string",
+      "enum": ["STOCK_SCREEN"]
+    },
+    "filters": {
+      "type": "object",
+      "properties": {
+        "sector": { "type": "string" },
+        "pe_lt": { "type": "number" },
+        "pe_gt": { "type": "number" },
+        "revenue_growth_gt": { "type": "number" },
+        "debt_to_fcf_lt": { "type": "number" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

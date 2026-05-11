@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Virtual environment
 .venv/
 env/
@@ -34,3 +35,11 @@ projects/auth_session/docs/generated/
 node_modules/
 dist/
 build/
+=======
+env/
+venv/
+
+**/node_modules/
+logs/
+
+>>>>>>> 3ff7a3c4ec9c42493de0fb19432dc97b354c02f9
